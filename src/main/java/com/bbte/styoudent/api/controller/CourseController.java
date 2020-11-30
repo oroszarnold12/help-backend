@@ -9,7 +9,9 @@ import com.bbte.styoudent.model.Course;
 import com.bbte.styoudent.service.CourseService;
 import com.bbte.styoudent.service.ServiceException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -74,15 +76,24 @@ public class CourseController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<CourseDto> updateCourse(@PathVariable(name = "id") Long id, @RequestBody @Valid CourseDto courseDto) {
+    public ResponseEntity<CourseDto> updateCourse(@PathVariable(name = "id") Long id, @RequestBody @Valid CourseDto courseDto, BindingResult errors) {
         log.debug("PUT /courses {}", courseDto);
+        if (errors.hasErrors()) {
+            throw new ApiException(errors
+                    .getAllErrors()
+                    .stream()
+                    .map(DefaultMessageSourceResolvable::getDefaultMessage)
+                    .collect(Collectors.joining()));
+        }
 
         if (!id.equals(courseDto.getId())) {
             throw new ApiException("URI and Object ids do not match");
         }
 
         try {
-            Course course = courseAssembler.dtoToModel(courseDto);
+            Course course = courseService.getById(id);
+            courseAssembler.updateCourseFromDto(courseDto, course);
+            log.info("{}", course.getAssignments().get(0).getCourse());
             courseService.save(course);
             return ResponseEntity.ok(courseAssembler.modelToDto(course));
         } catch (ServiceException se) {
