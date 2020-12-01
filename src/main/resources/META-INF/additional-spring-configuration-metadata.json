@@ -1,0 +1,8 @@
+{
+  "properties": [
+    {
+      "name": "styoudent.config.secret.key",
+      "type": "java.lang.String",
+      "description": "Description for styoudent.config.secret.key."
+    }
+  ] }
