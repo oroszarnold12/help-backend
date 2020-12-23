@@ -8,6 +8,7 @@ import java.util.List;
 public class CourseDto {
     private Long id;
     private String name;
+    private String longName;
     private String description;
     private List<AssignmentDto> assignments;
     private List<AnnouncementDto> announcements;

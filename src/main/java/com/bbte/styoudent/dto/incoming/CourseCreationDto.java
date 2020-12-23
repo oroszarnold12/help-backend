@@ -11,7 +11,7 @@ public class CourseCreationDto {
     @Size(max = 256)
     private String name;
 
-    @NotEmpty(message = "Field description not provided")
+    @NotEmpty(message = "Field longName not provided")
     @Size(max = 265)
-    private String description;
+    private String longName;
 }
