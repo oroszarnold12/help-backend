@@ -3,6 +3,7 @@ package com.bbte.styoudent.model;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
+import org.springframework.beans.factory.annotation.Value;
 
 import javax.persistence.*;
 import java.util.List;

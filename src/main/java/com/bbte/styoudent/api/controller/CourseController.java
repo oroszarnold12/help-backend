@@ -82,6 +82,7 @@ public class CourseController {
 
         try {
             Course course = courseAssembler.courseCreationDtoToModel(courseCreationDto);
+            course.setDescription("Default description");
             courseService.save(course);
             participationService.createInitialParticipation(course, person);
             return ResponseEntity.ok(courseAssembler.modelToDto(course));

@@ -11,13 +11,14 @@ import javax.validation.constraints.Size;
 @Data
 public class PersonSignUpDto {
     @NotEmpty
-    @Size(max = 256)
+    @Size(max = 255)
     private String firstName;
 
     @NotEmpty
-    @Size(max = 256)
+    @Size(max = 255)
     private String lastName;
 
+    @Size(max = 255)
     @Pattern(regexp = "^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$", message = "Email address is not valid!")
     private String email;
 
