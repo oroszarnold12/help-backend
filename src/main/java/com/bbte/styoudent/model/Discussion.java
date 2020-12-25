@@ -17,7 +17,7 @@ public class Discussion extends BaseEntity {
     @Column(name = "name")
     private String name;
 
-    @Column(name = "content")
+    @Column(name = "content", length = 16384)
     private String content;
 
     @Column(name = "date")

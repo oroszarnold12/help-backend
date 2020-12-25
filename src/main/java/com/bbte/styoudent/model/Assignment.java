@@ -22,7 +22,7 @@ public class Assignment extends BaseEntity {
     @Column(name = "points")
     private Integer points;
 
-    @Column(name = "description")
+    @Column(name = "description", length = 16384)
     private String description;
 
     @ManyToOne

@@ -12,14 +12,14 @@ import java.util.List;
 @Data
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
-public class Course extends BaseEntity{
+public class Course extends BaseEntity {
     @Column(name = "name")
     private String name;
 
     @Column(name = "long_name")
     private String longName;
 
-    @Column(name = "description")
+    @Column(name = "description", length = 65536)
     private String description;
 
     @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)

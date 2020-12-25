@@ -19,7 +19,7 @@ public class Announcement extends BaseEntity {
     @Column(name = "date")
     private LocalDateTime date;
 
-    @Column(name = "content")
+    @Column(name = "content", length = 16384)
     private String content;
 
     @ManyToOne
