@@ -1,11 +1,10 @@
 package com.bbte.styoudent.api.controller;
 
-import com.bbte.styoudent.api.ApiException;
 import com.bbte.styoudent.api.assembler.PersonAssembler;
+import com.bbte.styoudent.api.exception.BadRequestException;
 import com.bbte.styoudent.dto.PersonDto;
 import com.bbte.styoudent.dto.incoming.PersonSignUpDto;
 import com.bbte.styoudent.dto.outgoing.ApiResponseMessage;
-import com.bbte.styoudent.model.Person;
 import com.bbte.styoudent.security.authentication.LoginRequest;
 import com.bbte.styoudent.security.authentication.Token;
 import com.bbte.styoudent.security.util.CookieUtil;
@@ -52,14 +51,14 @@ public class AuthController {
     }
 
     @PostMapping(value = "/login")
-    public ResponseEntity<ApiResponseMessage> login(@Valid @RequestBody LoginRequest loginRequest) throws ApiException {
+    public ResponseEntity<ApiResponseMessage> login(@Valid @RequestBody LoginRequest loginRequest) {
         Authentication authentication;
         try {
             authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword())
             );
         } catch (BadCredentialsException e) {
-            throw new ApiException("Incorrect username or password", e);
+            throw new BadRequestException("Incorrect username or password", e);
         }
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
@@ -98,7 +97,7 @@ public class AuthController {
             return new ResponseEntity<>(personAssembler.modelToDto(personService.registerNewPerson(
                     personAssembler.signUpDtoToModel(personSignUpDto))), HttpStatus.OK);
         } catch (ServiceException se) {
-            throw new ApiException("Person saving failed");
+            throw new BadRequestException("Person saving failed", se);
         }
     }
 

@@ -1,6 +1,6 @@
 package com.bbte.styoudent.security.filter;
 
-import com.bbte.styoudent.api.ApiException;
+import com.bbte.styoudent.api.exception.ForbiddenException;
 import com.bbte.styoudent.service.ServiceException;
 import com.bbte.styoudent.service.impl.JwtTokenProvider;
 import com.bbte.styoudent.service.impl.UserDetailsServiceImpl;
@@ -8,7 +8,6 @@ import io.jsonwebtoken.Claims;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.web.authentication.WebAuthenticationDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -53,7 +52,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             }
         } catch (ServiceException se) {
             deleteCookies(request, response);
-            throw new ApiException("Unauthorized request", se);
+            throw new ForbiddenException("Unauthorized request", se);
         }
         filterChain.doFilter(request, response);
     }

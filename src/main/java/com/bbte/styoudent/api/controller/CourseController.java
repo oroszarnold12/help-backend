@@ -1,7 +1,10 @@
 package com.bbte.styoudent.api.controller;
 
-import com.bbte.styoudent.api.ApiException;
 import com.bbte.styoudent.api.assembler.CourseAssembler;
+import com.bbte.styoudent.api.exception.BadRequestException;
+import com.bbte.styoudent.api.exception.ForbiddenException;
+import com.bbte.styoudent.api.exception.InternalServerException;
+import com.bbte.styoudent.api.exception.NotFoundException;
 import com.bbte.styoudent.dto.CourseDto;
 import com.bbte.styoudent.dto.incoming.CourseCreationDto;
 import com.bbte.styoudent.dto.outgoing.ApiResponseMessage;
@@ -15,6 +18,7 @@ import com.bbte.styoudent.service.ServiceException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -41,6 +45,7 @@ public class CourseController {
     }
 
     @GetMapping
+    @PreAuthorize("hasRole('STUDENT') or hasRole('TEACHER')")
     public ResponseEntity<Map<String, List<?>>> getCourses() {
         log.debug("GET /courses");
 
@@ -54,11 +59,12 @@ public class CourseController {
                             .collect(Collectors.toList()))
             );
         } catch (ServiceException se) {
-            throw new ApiException("Could not GET courses", se);
+            throw new InternalServerException("Could not GET courses", se);
         }
     }
 
     @GetMapping(value = "/{id}")
+    @PreAuthorize("hasRole('STUDENT') or hasRole('TEACHER')")
     public ResponseEntity<CourseDto> getCourse(@PathVariable(name = "id") Long id) {
         log.debug("GET /courses/{}", id);
 
@@ -70,40 +76,40 @@ public class CourseController {
                     courseAssembler.modelToDto(course)
             );
         } catch (ServiceException se) {
-            throw new ApiException("Could not GET course with id " + id, se);
+            throw new NotFoundException("Could not GET course with id " + id, se);
         }
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('TEACHER')")
     public ResponseEntity<CourseDto> saveCourse(@RequestBody @Valid CourseCreationDto courseCreationDto) {
         log.debug("POST /courses {}", courseCreationDto);
 
         Person person = personService.getPersonByEmail(AuthUtil.getCurrentUsername());
 
         try {
-            Course course = courseAssembler.courseCreationDtoToModel(courseCreationDto);
-            course.setDescription("Default description");
+            Course course = courseAssembler.courseCreationDtoToModel(courseCreationDto, person);
             courseService.save(course);
             participationService.createInitialParticipation(course, person);
             return ResponseEntity.ok(courseAssembler.modelToDto(course));
         } catch (ServiceException se) {
-            throw new ApiException("Could not POST course", se);
+            throw new BadRequestException("Could not POST course", se);
         }
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('TEACHER')")
     public ResponseEntity<CourseDto> updateCourse(@PathVariable(name = "id") Long id, @RequestBody @Valid CourseDto courseDto, BindingResult errors) {
         log.debug("PUT /courses {}", courseDto);
+
+        Person person = personService.getPersonByEmail(AuthUtil.getCurrentUsername());
+
         if (errors.hasErrors()) {
-            throw new ApiException(errors
+            throw new BadRequestException(errors
                     .getAllErrors()
                     .stream()
                     .map(DefaultMessageSourceResolvable::getDefaultMessage)
                     .collect(Collectors.joining()));
-        }
-
-        if (!id.equals(courseDto.getId())) {
-            throw new ApiException("URI and Object ids do not match");
         }
 
         try {
@@ -112,19 +118,33 @@ public class CourseController {
             courseService.save(course);
             return ResponseEntity.ok(courseAssembler.modelToDto(course));
         } catch (ServiceException se) {
-            throw new ApiException("Could not PUT course with id: " + id, se);
+            throw new BadRequestException("Could not PUT course with id: " + id, se);
         }
     }
 
     @DeleteMapping("{id}")
+    @PreAuthorize("hasRole('TEACHER')")
     public ResponseEntity<ApiResponseMessage> deleteCourse(@PathVariable(name = "id") Long id) {
         log.debug("DELETE /courses/{}", id);
+
+        Person person = personService.getPersonByEmail(AuthUtil.getCurrentUsername());
+        Long teacherId;
+
+        try {
+            teacherId = courseService.getById(id).getTeacher().getId();
+        } catch (ServiceException se) {
+            throw new BadRequestException("Could not DELETE course with id " + id, se);
+        }
+
+        if (!teacherId.equals(person.getId())) {
+            throw new ForbiddenException("Access denied");
+        }
 
         try {
             courseService.delete(id);
             return ResponseEntity.ok().body(new ApiResponseMessage("Course deletion with id " + id + " successful."));
         } catch (ServiceException se) {
-            throw new ApiException("Could not DELETE course with id " + id, se);
+            throw new BadRequestException("Could not DELETE course with id " + id, se);
         }
     }
 }

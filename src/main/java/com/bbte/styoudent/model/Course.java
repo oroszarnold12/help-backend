@@ -23,6 +23,10 @@ public class Course extends BaseEntity {
     @Column(name = "description", length = 65536)
     private String description;
 
+    @ManyToOne
+    @JoinColumn(name = "teacher_id")
+    private Person teacher;
+
     @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Assignment> assignments;
 

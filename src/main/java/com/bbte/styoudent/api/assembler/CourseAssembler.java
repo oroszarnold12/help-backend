@@ -3,6 +3,7 @@ package com.bbte.styoudent.api.assembler;
 import com.bbte.styoudent.dto.CourseDto;
 import com.bbte.styoudent.dto.incoming.CourseCreationDto;
 import com.bbte.styoudent.model.Course;
+import com.bbte.styoudent.model.Person;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 
@@ -22,8 +23,12 @@ public class CourseAssembler {
         return modelMapper.map(course, CourseDto.class);
     }
 
-    public Course courseCreationDtoToModel(CourseCreationDto courseCreationDto) {
-        return modelMapper.map(courseCreationDto, Course.class);
+    public Course courseCreationDtoToModel(CourseCreationDto courseCreationDto, Person teacher) {
+        Course course = modelMapper.map(courseCreationDto, Course.class);
+        course.setTeacher(teacher);
+        teacher.getCourses().add(course);
+        course.setDescription("Default description");
+        return course;
     }
 
     public void updateCourseFromDto(CourseDto courseDto, Course course) {
