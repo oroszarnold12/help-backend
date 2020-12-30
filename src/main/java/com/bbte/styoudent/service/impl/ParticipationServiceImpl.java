@@ -33,4 +33,9 @@ public class ParticipationServiceImpl implements ParticipationService {
             throw new ServiceException("Participation deletion by course with id " + course.getId() + " failed. " +de);
         }
     }
+
+    @Override
+    public boolean checkIfParticipates(Course course, Person person) {
+        return participationRepository.existsByCourseAndPerson(course, person);
+    }
 }

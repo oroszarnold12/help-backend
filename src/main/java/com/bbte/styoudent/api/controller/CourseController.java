@@ -133,7 +133,7 @@ public class CourseController {
         try {
             teacherId = courseService.getById(id).getTeacher().getId();
         } catch (ServiceException se) {
-            throw new BadRequestException("Could not DELETE course with id " + id, se);
+            throw new BadRequestException("Could not GET course with id " + id, se);
         }
 
         if (!teacherId.equals(person.getId())) {

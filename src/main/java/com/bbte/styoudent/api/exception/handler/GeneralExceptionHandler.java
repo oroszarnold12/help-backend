@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
+import java.nio.file.AccessDeniedException;
+
 @ControllerAdvice
 public class GeneralExceptionHandler {
     @ExceptionHandler
@@ -44,7 +46,7 @@ public class GeneralExceptionHandler {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.FORBIDDEN)
     @ResponseBody
-    public String handleBadRequest(ForbiddenException forbiddenException) {
+    public String handleForbiddenRequest(ForbiddenException forbiddenException) {
         return forbiddenException.getMessage();
     }
 }

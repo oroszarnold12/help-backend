@@ -10,7 +10,7 @@ import java.util.List;
 @Entity
 @Table(name = "person")
 @Data
-@ToString(callSuper = true)
+@ToString(callSuper = true, exclude = "courses")
 @EqualsAndHashCode(callSuper = true)
 public class Person extends BaseEntity {
     @Column(name = "first_name")
