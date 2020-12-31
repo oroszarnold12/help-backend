@@ -7,8 +7,8 @@ import javax.validation.constraints.NotNull;
 
 @Data
 public class InvitationCreationDto {
-    @NotEmpty
+    @NotEmpty(message = "Invitation does not contain any email")
     private String[] emails;
-    @NotNull
+    @NotNull(message = "Id of course not provided")
     private Long courseId;
 }

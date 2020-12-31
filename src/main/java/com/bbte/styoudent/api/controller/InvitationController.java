@@ -12,8 +12,10 @@ import com.bbte.styoudent.model.Person;
 import com.bbte.styoudent.security.util.AuthUtil;
 import com.bbte.styoudent.service.*;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -52,8 +54,16 @@ public class InvitationController {
 
     @PostMapping
     @PreAuthorize("hasRole('TEACHER')")
-    public ResponseEntity<ApiResponseMessage> createInvitations(@RequestBody @Valid InvitationCreationDto invitationCreationDto) {
+    public ResponseEntity<ApiResponseMessage> createInvitations(@RequestBody @Valid InvitationCreationDto invitationCreationDto, BindingResult errors) {
         log.debug("POST /invitations {}", invitationCreationDto);
+
+        if (errors.hasErrors()) {
+            throw new BadRequestException(errors
+                    .getAllErrors()
+                    .stream()
+                    .map(DefaultMessageSourceResolvable::getDefaultMessage)
+                    .collect(Collectors.joining()));
+        }
 
         Person user = personService.getPersonByEmail(AuthUtil.getCurrentUsername());
         Course course;

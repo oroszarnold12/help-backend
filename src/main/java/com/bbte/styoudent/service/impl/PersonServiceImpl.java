@@ -8,6 +8,8 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class PersonServiceImpl implements PersonService {
     private final PersonRepository personRepository;
@@ -38,5 +40,10 @@ public class PersonServiceImpl implements PersonService {
     public Person registerNewPerson(Person person) throws ServiceException {
         person.setPassword(passwordEncoder.encode(person.getPassword()));
         return savePerson(person);
+    }
+
+    @Override
+    public List<Person> getAllPersons() {
+        return personRepository.findAll();
     }
 }
