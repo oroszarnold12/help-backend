@@ -2,9 +2,12 @@ package com.bbte.styoudent.api.controller;
 
 import com.bbte.styoudent.api.assembler.PersonAssembler;
 import com.bbte.styoudent.api.exception.BadRequestException;
+import com.bbte.styoudent.api.exception.ConflictException;
 import com.bbte.styoudent.dto.PersonDto;
 import com.bbte.styoudent.dto.incoming.PersonSignUpDto;
 import com.bbte.styoudent.dto.outgoing.ApiResponseMessage;
+import com.bbte.styoudent.model.Person;
+import com.bbte.styoudent.model.Role;
 import com.bbte.styoudent.security.authentication.LoginRequest;
 import com.bbte.styoudent.security.authentication.Token;
 import com.bbte.styoudent.security.util.CookieUtil;
@@ -58,7 +61,7 @@ public class AuthController {
                     new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword())
             );
         } catch (BadCredentialsException e) {
-            throw new BadRequestException("Incorrect username or password", e);
+            throw new BadRequestException("Incorrect username or password.", e);
         }
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
@@ -93,11 +96,18 @@ public class AuthController {
 
     @PostMapping(value = "/sign-up")
     public ResponseEntity<PersonDto> signUpPerson(@RequestBody @Valid PersonSignUpDto personSignUpDto) {
+        Person person = personAssembler.signUpDtoToModel(personSignUpDto);
+        person.setRole(Role.ROLE_STUDENT);
+
         try {
-            return new ResponseEntity<>(personAssembler.modelToDto(personService.registerNewPerson(
-                    personAssembler.signUpDtoToModel(personSignUpDto))), HttpStatus.OK);
+            if (personService.checkIfExistsByEmail(personSignUpDto.getEmail())) {
+                throw new ConflictException("This email address is already in use.");
+            } else {
+                return new ResponseEntity<>(personAssembler.modelToDto(personService.registerNewPerson(person)),
+                        HttpStatus.OK);
+            }
         } catch (ServiceException se) {
-            throw new BadRequestException("Person saving failed", se);
+            throw new BadRequestException("Registration failed!", se);
         }
     }
 

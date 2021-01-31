@@ -46,4 +46,9 @@ public class PersonServiceImpl implements PersonService {
     public List<Person> getAllPersons() {
         return personRepository.findAll();
     }
+
+    @Override
+    public boolean checkIfExistsByEmail(String email) {
+        return personRepository.existsByEmail(email);
+    }
 }

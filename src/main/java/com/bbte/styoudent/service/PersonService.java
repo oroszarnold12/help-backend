@@ -9,4 +9,5 @@ public interface PersonService {
     Person savePerson(Person person) throws ServiceException;
     Person registerNewPerson(Person person) throws ServiceException;
     List<Person> getAllPersons();
+    boolean checkIfExistsByEmail(String email);
 }

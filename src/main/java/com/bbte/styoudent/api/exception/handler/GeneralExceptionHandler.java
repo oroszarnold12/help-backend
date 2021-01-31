@@ -1,18 +1,12 @@
 package com.bbte.styoudent.api.exception.handler;
 
-import com.bbte.styoudent.api.exception.BadRequestException;
-import com.bbte.styoudent.api.exception.ForbiddenException;
-import com.bbte.styoudent.api.exception.InternalServerException;
-import com.bbte.styoudent.api.exception.NotFoundException;
+import com.bbte.styoudent.api.exception.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
-
-import java.nio.file.AccessDeniedException;
 
 @ControllerAdvice
 public class GeneralExceptionHandler {
@@ -49,5 +43,12 @@ public class GeneralExceptionHandler {
     @ResponseBody
     public String handleForbiddenRequest(ForbiddenException forbiddenException) {
         return forbiddenException.getMessage();
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.CONFLICT)
+    @ResponseBody
+    public String handleConflict(ConflictException conflictException) {
+        return conflictException.getMessage();
     }
 }
