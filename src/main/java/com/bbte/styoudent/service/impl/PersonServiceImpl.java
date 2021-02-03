@@ -51,4 +51,19 @@ public class PersonServiceImpl implements PersonService {
     public boolean checkIfExistsByEmail(String email) {
         return personRepository.existsByEmail(email);
     }
+
+    @Override
+    public void delete(Long id) {
+        try {
+            personRepository.deleteById(id);
+        } catch (DataAccessException de) {
+            throw new ServiceException("Person deletion with id: " + id + " failed", de);
+        }
+    }
+
+    @Override
+    public Person getPersonById(Long id) {
+        return personRepository.findById(id).orElseThrow(() ->
+                new ServiceException("Person with id:" + id + " not found"));
+    }
 }

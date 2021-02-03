@@ -54,7 +54,7 @@ public class AuthController {
     }
 
     @PostMapping(value = "/login")
-    public ResponseEntity<ApiResponseMessage> login(@Valid @RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<PersonDto> login(@Valid @RequestBody LoginRequest loginRequest) {
         Authentication authentication;
         try {
             authentication = authenticationManager.authenticate(
@@ -71,7 +71,8 @@ public class AuthController {
 
         Token newAccessToken = jwtTokenProvider.generateToken(userDetails);
         addAccessTokenCookie(httpHeaders, newAccessToken);
-        return ResponseEntity.ok().headers(httpHeaders).body(new ApiResponseMessage("Auth successful. Tokens are created in cookie."));
+        return ResponseEntity.ok().headers(httpHeaders).body(personAssembler.modelToDto(
+                personService.getPersonByEmail(loginRequest.getUsername())));
     }
 
     @GetMapping("/logout")

@@ -10,4 +10,6 @@ public interface PersonService {
     Person registerNewPerson(Person person) throws ServiceException;
     List<Person> getAllPersons();
     boolean checkIfExistsByEmail(String email);
+    void delete(Long id);
+    Person getPersonById(Long id);
 }

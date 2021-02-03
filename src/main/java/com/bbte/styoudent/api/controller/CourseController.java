@@ -45,7 +45,7 @@ public class CourseController {
     }
 
     @GetMapping
-    @PreAuthorize("hasRole('STUDENT') or hasRole('TEACHER')")
+    @PreAuthorize("hasRole('STUDENT') or hasRole('TEACHER') or hasRole('ADMIN')")
     public ResponseEntity<Map<String, List<?>>> getCourses() {
         log.debug("GET /courses");
 
