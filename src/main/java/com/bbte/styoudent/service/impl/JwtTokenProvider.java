@@ -51,7 +51,7 @@ public class JwtTokenProvider {
         try {
             return Jwts.parserBuilder().setSigningKey(KEY).build().parseClaimsJws(token).getBody();
         } catch (SignatureException | ExpiredJwtException e) {
-            throw new ServiceException("Invalid token", e);
+            throw new ServiceException("Invalid token!", e);
         }
     }
 

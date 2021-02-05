@@ -1,8 +1,8 @@
 package com.bbte.styoudent.api.controller;
 
 import com.bbte.styoudent.api.assembler.PersonAssembler;
-import com.bbte.styoudent.api.assembler.ThinPersonAssembler;
 import com.bbte.styoudent.api.exception.BadRequestException;
+import com.bbte.styoudent.api.exception.InternalServerException;
 import com.bbte.styoudent.dto.PersonDto;
 import com.bbte.styoudent.dto.incoming.PersonUpdateDto;
 import com.bbte.styoudent.dto.outgoing.ApiResponseMessage;
@@ -12,10 +12,8 @@ import com.bbte.styoudent.security.util.AuthUtil;
 import com.bbte.styoudent.service.PersonService;
 import com.bbte.styoudent.service.ServiceException;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -29,13 +27,11 @@ import java.util.stream.Collectors;
 @RequestMapping("/persons")
 public class PersonController {
     private final PersonService personService;
-    private final ThinPersonAssembler thinPersonAssembler;
     private final PersonAssembler personAssembler;
 
-    public PersonController(PersonService personService, ThinPersonAssembler thinPersonAssembler,
+    public PersonController(PersonService personService,
                             PersonAssembler personAssembler) {
         this.personService = personService;
-        this.thinPersonAssembler = thinPersonAssembler;
         this.personAssembler = personAssembler;
     }
 
@@ -46,32 +42,28 @@ public class PersonController {
 
         Person person = personService.getPersonByEmail(AuthUtil.getCurrentUsername());
 
-        if (person.getRole() == Role.ROLE_TEACHER) {
-            return ResponseEntity.ok(
-                    Collections.singletonMap("persons", personService.getAllPersons()
-                            .stream().map(thinPersonAssembler::modelToDto)
-                            .collect(Collectors.toList())));
-        } else {
-            return ResponseEntity.ok(
-                    Collections.singletonMap("persons", personService.getAllPersons()
-                            .stream().map(personAssembler::modelToDto)
-                            .collect(Collectors.toList())));
+        try {
+            if (person.getRole() == Role.ROLE_TEACHER) {
+                return ResponseEntity.ok(
+                        Collections.singletonMap("persons", personService.getAllPersons()
+                                .stream().map(personAssembler::modelToThinDto)
+                                .collect(Collectors.toList())));
+            } else {
+                return ResponseEntity.ok(
+                        Collections.singletonMap("persons", personService.getAllPersons()
+                                .stream().map(personAssembler::modelToDto)
+                                .collect(Collectors.toList())));
+            }
+        } catch (ServiceException se) {
+            throw new InternalServerException("Could not GET persons!", se);
         }
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     ResponseEntity<PersonDto> updatePerson(@PathVariable(name = "id") Long id,
-                                           @RequestBody @Valid PersonUpdateDto personUpdateDto, BindingResult errors){
+                                           @RequestBody @Valid PersonUpdateDto personUpdateDto) {
         log.debug("PUT /persons/{}", id);
-
-        if (errors.hasErrors()) {
-            throw new BadRequestException(errors
-                    .getAllErrors()
-                    .stream()
-                    .map(DefaultMessageSourceResolvable::getDefaultMessage)
-                    .collect(Collectors.joining()));
-        }
 
         try {
             Person person = personService.getPersonById(id);
@@ -79,9 +71,10 @@ public class PersonController {
 
             person.setRole(incomingPerson.getRole());
             personService.savePerson(person);
+
             return ResponseEntity.ok(personAssembler.modelToDto(person));
         } catch (ServiceException se) {
-            throw new BadRequestException("Could not put person with id: " + id, se);
+            throw new BadRequestException("Could not put person with id: " + id + "!", se);
         }
     }
 
@@ -92,13 +85,14 @@ public class PersonController {
 
         try {
             if (personService.getPersonById(id).getRole() == Role.ROLE_ADMIN) {
-                throw new BadRequestException("Cannot delete person with admin role");
+                throw new BadRequestException("Cannot delete person with admin role!");
             }
 
             personService.delete(id);
-            return ResponseEntity.ok().body(new ApiResponseMessage("Person deletion with id " + id + " successful."));
+
+            return ResponseEntity.ok().body(new ApiResponseMessage("Person deletion with id " + id + " successful!"));
         } catch (ServiceException se) {
-            throw new BadRequestException("Could not DELETE person with id " + id, se);
+            throw new BadRequestException("Could not DELETE person with id " + id + "!", se);
         }
     }
 }

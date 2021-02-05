@@ -6,15 +6,15 @@ import com.bbte.styoudent.model.Person;
 import java.util.List;
 
 public interface CourseService {
-    List<Course> getAll() throws ServiceException;
+    List<Course> getAll();
 
-    Course getById(Long id) throws ServiceException;
+    Course getById(Long id);
 
-    Course save(Course course) throws ServiceException;
+    Course save(Course course);
 
-    void delete(Long id) throws ServiceException;
+    void delete(Long id);
 
-    List<Course> getAllCoursesByPerson(Person person) throws ServiceException;
+    List<Course> getAllCoursesByPerson(Person person);
 
-    Course getCourseByPerson(Person person, Long id) throws ServiceException;
+    Course getCourseByPerson(Person person, Long id);
 }

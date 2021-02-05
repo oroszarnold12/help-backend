@@ -44,7 +44,10 @@ public class AuthController {
     private final PersonService personService;
     private final PersonAssembler personAssembler;
 
-    public AuthController(AuthenticationManager authenticationManager, @Qualifier("userDetailsServiceImpl") UserDetailsService userDetailsService, JwtTokenProvider jwtTokenProvider, CookieUtil cookieUtil, PersonService personService, PersonAssembler personAssembler) {
+    public AuthController(AuthenticationManager authenticationManager,
+                          @Qualifier("userDetailsServiceImpl") UserDetailsService userDetailsService,
+                          JwtTokenProvider jwtTokenProvider, CookieUtil cookieUtil,
+                          PersonService personService, PersonAssembler personAssembler) {
         this.authenticationManager = authenticationManager;
         this.userDetailsService = userDetailsService;
         this.jwtTokenProvider = jwtTokenProvider;
@@ -113,6 +116,7 @@ public class AuthController {
     }
 
     private void addAccessTokenCookie(HttpHeaders httpHeaders, Token newAccessToken) {
-        httpHeaders.add(HttpHeaders.SET_COOKIE, cookieUtil.createAccessTokenCookie(newAccessToken.getTokenValue()).toString());
+        httpHeaders.add(HttpHeaders.SET_COOKIE,
+                cookieUtil.createAccessTokenCookie(newAccessToken.getTokenValue()).toString());
     }
 }

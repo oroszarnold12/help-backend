@@ -44,12 +44,20 @@ public class PersonServiceImpl implements PersonService {
 
     @Override
     public List<Person> getAllPersons() {
-        return personRepository.findAll();
+        try {
+            return personRepository.findAll();
+        } catch (DataAccessException de) {
+            throw new ServiceException("Person selection failed!", de);
+        }
     }
 
     @Override
     public boolean checkIfExistsByEmail(String email) {
-        return personRepository.existsByEmail(email);
+        try {
+            return personRepository.existsByEmail(email);
+        } catch (DataAccessException de) {
+            throw new ServiceException("Exists check failed!", de);
+        }
     }
 
     @Override
@@ -57,13 +65,13 @@ public class PersonServiceImpl implements PersonService {
         try {
             personRepository.deleteById(id);
         } catch (DataAccessException de) {
-            throw new ServiceException("Person deletion with id: " + id + " failed", de);
+            throw new ServiceException("Person deletion with id: " + id + " failed!", de);
         }
     }
 
     @Override
     public Person getPersonById(Long id) {
         return personRepository.findById(id).orElseThrow(() ->
-                new ServiceException("Person with id:" + id + " not found"));
+                new ServiceException("Person with id:" + id + " not found!"));
     }
 }

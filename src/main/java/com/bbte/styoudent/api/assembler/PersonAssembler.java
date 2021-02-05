@@ -1,6 +1,7 @@
 package com.bbte.styoudent.api.assembler;
 
 import com.bbte.styoudent.dto.PersonDto;
+import com.bbte.styoudent.dto.ThinPersonDto;
 import com.bbte.styoudent.dto.incoming.PersonSignUpDto;
 import com.bbte.styoudent.dto.incoming.PersonUpdateDto;
 import com.bbte.styoudent.model.Person;
@@ -29,5 +30,13 @@ public class PersonAssembler {
 
     public Person updateDtoToModel(PersonUpdateDto personUpdateDto) {
         return modelMapper.map(personUpdateDto, Person.class);
+    }
+
+    public Person thinDtoToModel(ThinPersonDto thinPersonDto) {
+        return modelMapper.map(thinPersonDto, Person.class);
+    }
+
+    public ThinPersonDto modelToThinDto(Person person) {
+        return modelMapper.map(person, ThinPersonDto.class);
     }
 }

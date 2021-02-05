@@ -9,8 +9,12 @@ import java.util.Optional;
 
 public interface InvitationService {
     void createInvitation(Course course, Person person);
+
     List<Invitation> getAllByPerson(Person person);
+
     boolean checkIfExistsByIdAndPerson(Long id, Person person);
+
     void deleteInvitation(Long id);
+
     Optional<Invitation> getInvitationById(Long id);
 }

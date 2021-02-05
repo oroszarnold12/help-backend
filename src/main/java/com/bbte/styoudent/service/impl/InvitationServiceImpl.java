@@ -6,6 +6,7 @@ import com.bbte.styoudent.model.Person;
 import com.bbte.styoudent.repository.InvitationRepository;
 import com.bbte.styoudent.service.InvitationService;
 import com.bbte.styoudent.service.ServiceException;
+import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -21,20 +22,32 @@ public class InvitationServiceImpl implements InvitationService {
 
     @Override
     public void createInvitation(Course course, Person person) {
-        Invitation invitation = new Invitation();
-        invitation.setCourse(course);
-        invitation.setPerson(person);
-        invitationRepository.save(invitation);
+        try {
+            Invitation invitation = new Invitation();
+            invitation.setCourse(course);
+            invitation.setPerson(person);
+            invitationRepository.save(invitation);
+        } catch (DataAccessException de) {
+            throw new ServiceException("Invitation creation failed!", de);
+        }
     }
 
     @Override
     public List<Invitation> getAllByPerson(Person person) {
-        return invitationRepository.findAllByPerson(person);
+        try {
+            return invitationRepository.findAllByPerson(person);
+        } catch (DataAccessException de) {
+            throw new ServiceException("Invitation selection failed!", de);
+        }
     }
 
     @Override
     public boolean checkIfExistsByIdAndPerson(Long id, Person person) {
-        return invitationRepository.existsByIdAndPerson(id, person);
+        try {
+            return invitationRepository.existsByIdAndPerson(id, person);
+        } catch (DataAccessException de) {
+            throw new ServiceException("Exists check failed!", de);
+        }
     }
 
     @Override
@@ -42,7 +55,7 @@ public class InvitationServiceImpl implements InvitationService {
         try {
             invitationRepository.deleteById(id);
         } catch (IllegalArgumentException ie) {
-            throw new ServiceException("Invitation deletion with id: " + id + " failed");
+            throw new ServiceException("Invitation deletion with id: " + id + " failed!");
         }
     }
 
@@ -51,7 +64,7 @@ public class InvitationServiceImpl implements InvitationService {
         try {
             return invitationRepository.findById(id);
         } catch (IllegalArgumentException ie) {
-            throw  new ServiceException("Invitation selection with id: " + id + " failed", ie);
+            throw new ServiceException("Invitation selection with id: " + id + " failed!", ie);
         }
     }
 }

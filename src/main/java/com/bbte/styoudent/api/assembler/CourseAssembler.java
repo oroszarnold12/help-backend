@@ -2,6 +2,7 @@ package com.bbte.styoudent.api.assembler;
 
 import com.bbte.styoudent.dto.CourseDto;
 import com.bbte.styoudent.dto.incoming.CourseCreationDto;
+import com.bbte.styoudent.dto.incoming.CourseUpdateDto;
 import com.bbte.styoudent.model.Course;
 import com.bbte.styoudent.model.Person;
 import org.modelmapper.ModelMapper;
@@ -31,9 +32,9 @@ public class CourseAssembler {
         return course;
     }
 
-    public void updateCourseFromDto(CourseDto courseDto, Course course) {
+    public void updateCourseFromDto(CourseUpdateDto courseUpdateDto, Course course) {
         clearCourse(course);
-        modelMapper.map(courseDto, course);
+        modelMapper.map(courseUpdateDto, course);
         setEntityNestedObjectRelation(course);
     }
 

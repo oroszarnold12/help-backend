@@ -1,54 +1,30 @@
 package com.bbte.styoudent.api.exception.handler;
 
-import com.bbte.styoudent.api.exception.*;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
+import javax.validation.ConstraintViolationException;
+import java.util.stream.Stream;
+
 @ControllerAdvice
 public class GeneralExceptionHandler {
-    @ExceptionHandler
+    @ExceptionHandler(ConstraintViolationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ResponseBody
-    public String handleBadRequest(BadRequestException badRequestException) {
-        return badRequestException.getMessage();
+    public final Stream<String> handleConstraintViolation(ConstraintViolationException e) {
+        return e.getConstraintViolations().stream()
+                .map(it -> it.getPropertyPath().toString() + " " + it.getMessage());
     }
 
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    @ResponseBody
-    public String handleNotFound(NotFoundException notFoundException) {
-        return notFoundException.getMessage();
-    }
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    @ResponseBody
-    public String handleInternalServer(InternalServerException internalServerException) {
-        return internalServerException.getMessage();
-    }
-
-    @ExceptionHandler
+    @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ResponseBody
-    public String handleBadRequest(HttpMessageNotReadableException httpMessageNotReadableException) {
-        return httpMessageNotReadableException.getLocalizedMessage();
-    }
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.FORBIDDEN)
-    @ResponseBody
-    public String handleForbiddenRequest(ForbiddenException forbiddenException) {
-        return forbiddenException.getMessage();
-    }
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.CONFLICT)
-    @ResponseBody
-    public String handleConflict(ConflictException conflictException) {
-        return conflictException.getMessage();
+    public final Stream<String> handleMethodArgumentNotValid(MethodArgumentNotValidException e) {
+        return e.getBindingResult().getFieldErrors().stream()
+                .map(it -> it.getField() + " " + it.getDefaultMessage());
     }
 }

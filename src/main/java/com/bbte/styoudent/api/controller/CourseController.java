@@ -10,6 +10,7 @@ import com.bbte.styoudent.dto.AnnouncementDto;
 import com.bbte.styoudent.dto.CourseDto;
 import com.bbte.styoudent.dto.incoming.AnnouncementCreationDto;
 import com.bbte.styoudent.dto.incoming.CourseCreationDto;
+import com.bbte.styoudent.dto.incoming.CourseUpdateDto;
 import com.bbte.styoudent.dto.outgoing.ApiResponseMessage;
 import com.bbte.styoudent.model.Announcement;
 import com.bbte.styoudent.model.Course;
@@ -20,10 +21,8 @@ import com.bbte.styoudent.service.ParticipationService;
 import com.bbte.styoudent.service.PersonService;
 import com.bbte.styoudent.service.ServiceException;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -43,7 +42,9 @@ public class CourseController {
     private final ParticipationService participationService;
     private final AnnouncementAssembler announcementAssembler;
 
-    public CourseController(CourseService courseService, CourseAssembler courseAssembler, PersonService personService, ParticipationService participationService, AnnouncementAssembler announcementAssembler) {
+    public CourseController(CourseService courseService, CourseAssembler courseAssembler,
+                            PersonService personService, ParticipationService participationService,
+                            AnnouncementAssembler announcementAssembler) {
         this.courseService = courseService;
         this.courseAssembler = courseAssembler;
         this.personService = personService;
@@ -66,7 +67,7 @@ public class CourseController {
                             .collect(Collectors.toList()))
             );
         } catch (ServiceException se) {
-            throw new InternalServerException("Could not GET courses", se);
+            throw new InternalServerException("Could not GET courses!", se);
         }
     }
 
@@ -83,7 +84,7 @@ public class CourseController {
                     courseAssembler.modelToDto(course)
             );
         } catch (ServiceException se) {
-            throw new NotFoundException("Could not GET course with id " + id, se);
+            throw new NotFoundException("Course with id:  " + id + " doesn't exists!", se);
         }
     }
 
@@ -97,14 +98,14 @@ public class CourseController {
 
         try {
             Course course = courseService.getCourseByPerson(person, courseId);
+
             Announcement announcement = course.getAnnouncements().stream().filter((announcement1 ->
                     announcement1.getId().equals(announcementId))).findFirst().orElseThrow(() ->
-                    new NotFoundException("Could not GET announcement with id: " + announcementId));
-            return ResponseEntity.ok(
-                    announcementAssembler.modelToDto(announcement)
-            );
+                    new NotFoundException("Announcement with id: " + announcementId + " doesn't exists!"));
+
+            return ResponseEntity.ok(announcementAssembler.modelToDto(announcement));
         } catch (ServiceException se) {
-            throw new NotFoundException("Could not GET course with id " + courseId, se);
+            throw new NotFoundException("Course with id:  " + courseId + " doesn't exists!", se);
         }
     }
 
@@ -119,65 +120,53 @@ public class CourseController {
             Course course = courseAssembler.courseCreationDtoToModel(courseCreationDto, person);
             courseService.save(course);
             participationService.createInitialParticipation(course, person);
+
             return ResponseEntity.ok(courseAssembler.modelToDto(course));
         } catch (ServiceException se) {
-            throw new BadRequestException("Could not POST course", se);
+            throw new BadRequestException("Could not POST course!", se);
         }
     }
 
     @PostMapping("/{courseId}/announcements")
     @PreAuthorize("hasRole('TEACHER')")
-    public ResponseEntity<AnnouncementDto> saveAnnouncement(@PathVariable(name = "courseId") Long courseId,
-                                                            @RequestBody @Valid AnnouncementCreationDto announcementCreationDto,
-                                                            BindingResult errors) {
+    public ResponseEntity<AnnouncementDto> saveAnnouncement(
+            @PathVariable(name = "courseId") Long courseId,
+            @RequestBody @Valid AnnouncementCreationDto announcementCreationDto) {
         log.debug("POST /courses/{}/announcements {}", courseId, announcementCreationDto);
 
         Person person = personService.getPersonByEmail(AuthUtil.getCurrentUsername());
 
-        if (errors.hasErrors()) {
-            throw new BadRequestException(errors
-                    .getAllErrors()
-                    .stream()
-                    .map(DefaultMessageSourceResolvable::getDefaultMessage)
-                    .collect(Collectors.joining()));
-        }
-
         try {
             Course course = courseService.getById(courseId);
+
             Announcement announcement = announcementAssembler.creationdtoToModel(announcementCreationDto);
             announcement.setCourse(course);
             announcement.setCreator(person);
             announcement.setDate(LocalDateTime.now());
+
             course.getAnnouncements().add(announcement);
             courseService.save(course);
+
             return ResponseEntity.ok(announcementAssembler.modelToDto(announcement));
         } catch (ServiceException se) {
-            throw new BadRequestException("Could not POST announcement", se);
+            throw new BadRequestException("Could not POST announcement!", se);
         }
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('TEACHER')")
-    public ResponseEntity<CourseDto> updateCourse(@PathVariable(name = "id") Long id, @RequestBody @Valid CourseDto courseDto, BindingResult errors) {
-        log.debug("PUT /courses {}", courseDto);
-
-        Person person = personService.getPersonByEmail(AuthUtil.getCurrentUsername());
-
-        if (errors.hasErrors()) {
-            throw new BadRequestException(errors
-                    .getAllErrors()
-                    .stream()
-                    .map(DefaultMessageSourceResolvable::getDefaultMessage)
-                    .collect(Collectors.joining()));
-        }
+    public ResponseEntity<CourseDto> updateCourse(@PathVariable(name = "id") Long id,
+                                                  @RequestBody @Valid CourseUpdateDto courseUpdateDto) {
+        log.debug("PUT /courses {}", courseUpdateDto);
 
         try {
             Course course = courseService.getById(id);
-            courseAssembler.updateCourseFromDto(courseDto, course);
+            courseAssembler.updateCourseFromDto(courseUpdateDto, course);
             courseService.save(course);
+
             return ResponseEntity.ok(courseAssembler.modelToDto(course));
         } catch (ServiceException se) {
-            throw new BadRequestException("Could not PUT course with id: " + id, se);
+            throw new BadRequestException("Could not PUT course with id: " + id + "!", se);
         }
     }
 
@@ -186,31 +175,23 @@ public class CourseController {
     public ResponseEntity<AnnouncementDto> updateAnnouncement(
             @PathVariable(name = "courseId") Long courseId,
             @PathVariable(name = "announcementId") Long announcementId,
-            @RequestBody @Valid AnnouncementCreationDto announcementCreationDto,
-            BindingResult errors) {
+            @RequestBody @Valid AnnouncementCreationDto announcementCreationDto) {
         log.debug("PUT /courses/{}/announcements {}", courseId, announcementCreationDto);
-
-        Person person = personService.getPersonByEmail(AuthUtil.getCurrentUsername());
-
-        if (errors.hasErrors()) {
-            throw new BadRequestException(errors
-                    .getAllErrors()
-                    .stream()
-                    .map(DefaultMessageSourceResolvable::getDefaultMessage)
-                    .collect(Collectors.joining()));
-        }
 
         try {
             Course course = courseService.getById(courseId);
+
             Announcement announcement = course.getAnnouncements().stream().filter((announcement1 ->
                     announcement1.getId().equals(announcementId))).findFirst().orElseThrow(() ->
-                    new NotFoundException("Could not GET announcement with id: " + announcementId));
+                    new NotFoundException("Announcement with id: " + announcementId + " doesn't exists!"));
             announcement.setName(announcementCreationDto.getName());
             announcement.setContent(announcementCreationDto.getContent());
+
             courseService.save(course);
+
             return ResponseEntity.ok(announcementAssembler.modelToDto(announcement));
         } catch (ServiceException se) {
-            throw new BadRequestException("Could not POST announcement", se);
+            throw new BadRequestException("Could not PUT announcement!", se);
         }
     }
 
@@ -225,18 +206,19 @@ public class CourseController {
         try {
             teacherId = courseService.getById(id).getTeacher().getId();
         } catch (ServiceException se) {
-            throw new BadRequestException("Could not GET course with id " + id, se);
+            throw new BadRequestException("Course with id: " + id + " doesn't exists!", se);
         }
 
         if (!teacherId.equals(person.getId())) {
-            throw new ForbiddenException("Access denied");
+            throw new ForbiddenException("Access denied!");
         }
 
         try {
             courseService.delete(id);
-            return ResponseEntity.ok().body(new ApiResponseMessage("Course deletion with id " + id + " successful."));
+
+            return ResponseEntity.ok().body(new ApiResponseMessage("Course deletion with id " + id + " successful!"));
         } catch (ServiceException se) {
-            throw new BadRequestException("Could not DELETE course with id " + id, se);
+            throw new BadRequestException("Could not DELETE course with id " + id + "!", se);
         }
     }
 
@@ -248,15 +230,18 @@ public class CourseController {
 
         try {
             Course course = courseService.getById(courseId);
+
             Announcement announcement = course.getAnnouncements().stream().filter((announcement1 ->
                     announcement1.getId().equals(announcementId))).findFirst().orElseThrow(() ->
-                    new NotFoundException("Could not GET announcement with id: " + announcementId));
+                    new NotFoundException("Announcement with id: " + announcementId + " doesn't exists!"));
+
             course.setAnnouncements(course.getAnnouncements().stream().filter((announcement1 ->
                     !announcement1.equals(announcement))).collect(Collectors.toList()));
             courseService.save(course);
+
             return ResponseEntity.ok(announcementAssembler.modelToDto(announcement));
         } catch (ServiceException se) {
-            throw new BadRequestException("Could not POST announcement", se);
+            throw new BadRequestException("Could not POST announcement!", se);
         }
     }
 }

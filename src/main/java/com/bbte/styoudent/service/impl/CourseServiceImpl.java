@@ -24,13 +24,17 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     public List<Course> getAll() {
-        return courseRepository.findAll();
+        try {
+            return courseRepository.findAll();
+        } catch (DataAccessException de) {
+            throw new ServiceException("Course selection failed!");
+        }
     }
 
     @Override
     public Course getById(Long id) throws ServiceException {
         return courseRepository.findById(id).orElseThrow(
-                () -> new ServiceException("Course selection with id: " + id + " failed")
+                () -> new ServiceException("Course selection with id: " + id + " failed!")
         );
     }
 
@@ -39,7 +43,7 @@ public class CourseServiceImpl implements CourseService {
         try {
             return courseRepository.save(course);
         } catch (DataAccessException de) {
-            throw new ServiceException("Course insertion failed", de);
+            throw new ServiceException("Course insertion failed!", de);
         }
     }
 
@@ -51,7 +55,7 @@ public class CourseServiceImpl implements CourseService {
             participationService.deleteParticipationsByCourse(course);
             courseRepository.deleteById(id);
         } catch (DataAccessException de) {
-            throw new ServiceException("Course deletion with id " + id + " failed", de);
+            throw new ServiceException("Course deletion with id " + id + " failed!", de);
         }
     }
 
@@ -60,13 +64,13 @@ public class CourseServiceImpl implements CourseService {
         try {
             return courseRepository.findAllByPerson(person);
         } catch (DataAccessException de) {
-            throw new ServiceException("Course selection failed", de);
+            throw new ServiceException("Course selection failed!", de);
         }
     }
 
     @Override
     public Course getCourseByPerson(Person person, Long id) throws ServiceException {
         return courseRepository.findByPerson(person, id).orElseThrow(
-                () -> new ServiceException("Course selection with id " + id + " failed"));
+                () -> new ServiceException("Course selection with id " + id + " failed!"));
     }
 }
