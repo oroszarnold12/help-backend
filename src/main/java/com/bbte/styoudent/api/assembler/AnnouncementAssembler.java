@@ -17,7 +17,8 @@ public class AnnouncementAssembler {
     public Announcement dtoToModel(AnnouncementDto announcementDto) {
         return modelMapper.map(announcementDto, Announcement.class);
     }
-    public Announcement creationdtoToModel(AnnouncementCreationDto announcementCreationDto) {
+
+    public Announcement creationDtoToModel(AnnouncementCreationDto announcementCreationDto) {
         return modelMapper.map(announcementCreationDto, Announcement.class);
     }
 
