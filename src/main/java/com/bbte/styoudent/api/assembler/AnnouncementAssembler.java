@@ -1,6 +1,7 @@
 package com.bbte.styoudent.api.assembler;
 
 import com.bbte.styoudent.dto.AnnouncementDto;
+import com.bbte.styoudent.dto.incoming.AnnouncementCreationDto;
 import com.bbte.styoudent.model.Announcement;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
@@ -15,6 +16,9 @@ public class AnnouncementAssembler {
 
     public Announcement dtoToModel(AnnouncementDto announcementDto) {
         return modelMapper.map(announcementDto, Announcement.class);
+    }
+    public Announcement creationdtoToModel(AnnouncementCreationDto announcementCreationDto) {
+        return modelMapper.map(announcementCreationDto, Announcement.class);
     }
 
     public AnnouncementDto modelToDto(Announcement announcement) {

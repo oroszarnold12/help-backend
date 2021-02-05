@@ -25,4 +25,8 @@ public class Announcement extends BaseEntity {
     @ManyToOne
     @JoinColumn(name = "course_id")
     private Course course;
+
+    @ManyToOne
+    @JoinColumn(name = "creator_id")
+    private Person creator;
 }

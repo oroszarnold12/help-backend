@@ -34,4 +34,7 @@ public class Person extends BaseEntity {
 
     @OneToMany(mappedBy = "person", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Participation> participations;
+
+    @OneToMany(mappedBy = "creator", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Announcement> announcements;
 }
