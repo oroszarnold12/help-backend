@@ -1,6 +1,6 @@
 package com.bbte.styoudent.api.assembler;
 
-import com.bbte.styoudent.dto.AnnouncementDto;
+import com.bbte.styoudent.dto.outgoing.AnnouncementDto;
 import com.bbte.styoudent.dto.incoming.AnnouncementCreationDto;
 import com.bbte.styoudent.model.Announcement;
 import org.modelmapper.ModelMapper;
@@ -12,10 +12,6 @@ public class AnnouncementAssembler {
 
     public AnnouncementAssembler(ModelMapper modelMapper) {
         this.modelMapper = modelMapper;
-    }
-
-    public Announcement dtoToModel(AnnouncementDto announcementDto) {
-        return modelMapper.map(announcementDto, Announcement.class);
     }
 
     public Announcement creationDtoToModel(AnnouncementCreationDto announcementCreationDto) {

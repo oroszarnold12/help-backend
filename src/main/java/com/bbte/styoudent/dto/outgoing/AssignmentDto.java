@@ -1,4 +1,4 @@
-package com.bbte.styoudent.dto;
+package com.bbte.styoudent.dto.outgoing;
 
 import lombok.Data;
 
@@ -10,14 +10,8 @@ import java.time.LocalDateTime;
 @Data
 public class AssignmentDto {
     private Long id;
-    @NotEmpty
-    @Size(max = 255)
     private String name;
-    @NotNull
     private LocalDateTime dueDate;
-    @NotNull
     private Integer points;
-    @NotEmpty
-    @Size(max = 16384)
     private String description;
 }

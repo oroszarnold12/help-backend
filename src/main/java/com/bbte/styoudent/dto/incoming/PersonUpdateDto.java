@@ -13,15 +13,12 @@ public class PersonUpdateDto {
     @NotEmpty
     @Size(max = 255)
     private String firstName;
-
     @NotEmpty
     @Size(max = 255)
     private String lastName;
-
     @Size(max = 255)
     @Pattern(regexp = "^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$", message = "Email address is not valid!")
     private String email;
-
     @NotNull
     private Role role;
 }

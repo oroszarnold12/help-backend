@@ -1,6 +1,6 @@
 package com.bbte.styoudent.api.assembler;
 
-import com.bbte.styoudent.dto.InvitationDto;
+import com.bbte.styoudent.dto.outgoing.InvitationDto;
 import com.bbte.styoudent.model.Invitation;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
@@ -11,10 +11,6 @@ public class InvitationAssembler {
 
     public InvitationAssembler(ModelMapper modelMapper) {
         this.modelMapper = modelMapper;
-    }
-
-    public Invitation dtoToModel(InvitationDto invitationDto) {
-        return modelMapper.map(invitationDto, Invitation.class);
     }
 
     public InvitationDto modelToDto(Invitation invitation) {

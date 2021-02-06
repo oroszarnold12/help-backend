@@ -3,7 +3,7 @@ package com.bbte.styoudent.api.controller;
 import com.bbte.styoudent.api.assembler.PersonAssembler;
 import com.bbte.styoudent.api.exception.BadRequestException;
 import com.bbte.styoudent.api.exception.ConflictException;
-import com.bbte.styoudent.dto.PersonDto;
+import com.bbte.styoudent.dto.outgoing.PersonDto;
 import com.bbte.styoudent.dto.incoming.PersonSignUpDto;
 import com.bbte.styoudent.dto.outgoing.ApiResponseMessage;
 import com.bbte.styoudent.model.Person;
