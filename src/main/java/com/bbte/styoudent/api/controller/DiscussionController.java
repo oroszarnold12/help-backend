@@ -121,8 +121,8 @@ public class DiscussionController {
                     discussion1.getId().equals(discussionId))).findFirst().orElseThrow(() ->
                     new NotFoundException("Discussion with id: " + discussionId + " doesn't exists!"));
 
-            course.setDiscussions(course.getDiscussions().stream().filter((discussion1 ->
-                    !discussion1.equals(discussion))).collect(Collectors.toList()));
+            course.getDiscussions().remove(discussion);
+
             courseService.save(course);
 
             return ResponseEntity.noContent().build();

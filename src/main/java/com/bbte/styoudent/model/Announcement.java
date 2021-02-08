@@ -6,6 +6,7 @@ import lombok.ToString;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "announcement")
@@ -29,4 +30,7 @@ public class Announcement extends BaseEntity {
     @ManyToOne
     @JoinColumn(name = "creator_id")
     private Person creator;
+
+    @OneToMany(mappedBy = "announcement", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<AnnouncementComment> announcementComments;
 }

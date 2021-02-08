@@ -121,8 +121,8 @@ public class AnnouncementController {
                     announcement1.getId().equals(announcementId))).findFirst().orElseThrow(() ->
                     new NotFoundException("Announcement with id: " + announcementId + " doesn't exists!"));
 
-            course.setAnnouncements(course.getAnnouncements().stream().filter((announcement1 ->
-                    !announcement1.equals(announcement))).collect(Collectors.toList()));
+            course.getAnnouncements().remove(announcement);
+
             courseService.save(course);
 
             return ResponseEntity.noContent().build();

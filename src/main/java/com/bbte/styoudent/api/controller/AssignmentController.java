@@ -119,8 +119,8 @@ public class AssignmentController {
                     assignment1.getId().equals(assignmentId))).findFirst().orElseThrow(() ->
                     new NotFoundException("Assignment with id: " + assignmentId + " doesn't exists!"));
 
-            course.setAssignments(course.getAssignments().stream().filter((assignment1 ->
-                    !assignment1.equals(assignment))).collect(Collectors.toList()));
+            course.getAssignments().remove(assignment);
+
             courseService.save(course);
 
             return ResponseEntity.noContent().build();

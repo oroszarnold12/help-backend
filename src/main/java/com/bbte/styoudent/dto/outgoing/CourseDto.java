@@ -10,8 +10,8 @@ public class CourseDto {
     private String name;
     private String longName;
     private String description;
-    private List<AssignmentDto> assignments;
-    private List<AnnouncementDto> announcements;
-    private List<DiscussionDto> discussions;
-    private PersonDto teacher;
+    private List<ThinAssignmentDto> assignments;
+    private List<ThinAnnouncementDto> announcements;
+    private List<ThinDiscussionDto> discussions;
+    private ThinPersonDto teacher;
 }
