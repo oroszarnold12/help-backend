@@ -3,6 +3,7 @@ package com.bbte.styoudent.api.controller;
 import com.bbte.styoudent.api.assembler.AnnouncementCommentAssembler;
 import com.bbte.styoudent.api.exception.BadRequestException;
 import com.bbte.styoudent.api.exception.ForbiddenException;
+import com.bbte.styoudent.api.exception.InternalServerException;
 import com.bbte.styoudent.api.exception.NotFoundException;
 import com.bbte.styoudent.dto.incoming.AnnouncementCommentCreationDto;
 import com.bbte.styoudent.dto.outgoing.AnnouncementCommentDto;
@@ -12,6 +13,7 @@ import com.bbte.styoudent.model.Course;
 import com.bbte.styoudent.model.Person;
 import com.bbte.styoudent.security.util.AuthUtil;
 import com.bbte.styoudent.service.CourseService;
+import com.bbte.styoudent.service.ParticipationService;
 import com.bbte.styoudent.service.PersonService;
 import com.bbte.styoudent.service.ServiceException;
 import lombok.extern.slf4j.Slf4j;
@@ -29,12 +31,15 @@ public class AnnouncementCommentController {
     private final PersonService personService;
     private final CourseService courseService;
     private final AnnouncementCommentAssembler announcementCommentAssembler;
+    private final ParticipationService participationService;
 
     public AnnouncementCommentController(PersonService personService, CourseService courseService,
-                                         AnnouncementCommentAssembler announcementCommentAssembler) {
+                                         AnnouncementCommentAssembler announcementCommentAssembler,
+                                         ParticipationService participationService) {
         this.personService = personService;
         this.courseService = courseService;
         this.announcementCommentAssembler = announcementCommentAssembler;
+        this.participationService = participationService;
     }
 
     @PostMapping()
@@ -51,6 +56,8 @@ public class AnnouncementCommentController {
         try {
             Course course = getCourse(courseId);
             Announcement announcement = getAnnouncement(course, announcementId);
+
+            checkIfParticipates(course, person);
 
             AnnouncementComment announcementComment = announcementCommentAssembler.creationDtoToModel(
                     announcementCommentCreationDto
@@ -102,11 +109,11 @@ public class AnnouncementCommentController {
 
     @DeleteMapping("{announcementCommentId}")
     @PreAuthorize("hasRole('STUDENT') or hasRole('TEACHER')")
-    public ResponseEntity<?> deleteAnnouncement(
+    public ResponseEntity<?> deleteAnnouncementComment(
             @PathVariable(name = "courseId") Long courseId,
             @PathVariable(name = "announcementId") Long announcementId,
             @PathVariable(name = "announcementCommentId") Long announcementCommentId) {
-        log.debug("POST /courses/{}/announcements/{}/comments/{}", courseId, announcementId,
+        log.debug("DELETE /courses/{}/announcements/{}/comments/{}", courseId, announcementId,
                 announcementCommentId);
 
         Person person = personService.getPersonByEmail(AuthUtil.getCurrentUsername());
@@ -124,7 +131,7 @@ public class AnnouncementCommentController {
 
             courseService.save(course);
 
-            return ResponseEntity.ok(announcementCommentAssembler.modelToDto(announcementComment));
+            return ResponseEntity.noContent().build();
         } catch (ServiceException se) {
             throw new BadRequestException("Could not DELETE comment!", se);
         }
@@ -145,5 +152,15 @@ public class AnnouncementCommentController {
         return course.getAnnouncements().stream().filter((announcement1 ->
                 announcement1.getId().equals(announcementId))).findFirst().orElseThrow(() ->
                 new NotFoundException("Announcement with id: " + announcementId + " doesn't exists!"));
+    }
+
+    private void checkIfParticipates(Course course, Person person) {
+        try {
+            if (!participationService.checkIfParticipates(course, person)) {
+                throw new ForbiddenException("Access denied!");
+            }
+        } catch (ServiceException se) {
+            throw new InternalServerException("Could not check participation!", se);
+        }
     }
 }

@@ -2,6 +2,8 @@ package com.bbte.styoudent.api.controller;
 
 import com.bbte.styoudent.api.assembler.AssignmentAssembler;
 import com.bbte.styoudent.api.exception.BadRequestException;
+import com.bbte.styoudent.api.exception.ForbiddenException;
+import com.bbte.styoudent.api.exception.InternalServerException;
 import com.bbte.styoudent.api.exception.NotFoundException;
 import com.bbte.styoudent.dto.incoming.AssignmentCreationDto;
 import com.bbte.styoudent.dto.outgoing.AssignmentDto;
@@ -10,6 +12,7 @@ import com.bbte.styoudent.model.Course;
 import com.bbte.styoudent.model.Person;
 import com.bbte.styoudent.security.util.AuthUtil;
 import com.bbte.styoudent.service.CourseService;
+import com.bbte.styoudent.service.ParticipationService;
 import com.bbte.styoudent.service.PersonService;
 import com.bbte.styoudent.service.ServiceException;
 import lombok.extern.slf4j.Slf4j;
@@ -18,7 +21,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
@@ -27,12 +29,14 @@ public class AssignmentController {
     private final CourseService courseService;
     private final PersonService personService;
     private final AssignmentAssembler assignmentAssembler;
+    private final ParticipationService participationService;
 
     public AssignmentController(CourseService courseService, PersonService personService,
-                                AssignmentAssembler assignmentAssembler) {
+                                AssignmentAssembler assignmentAssembler, ParticipationService participationService) {
         this.courseService = courseService;
         this.personService = personService;
         this.assignmentAssembler = assignmentAssembler;
+        this.participationService = participationService;
     }
 
     @GetMapping(value = "{assignmentId}")
@@ -63,8 +67,12 @@ public class AssignmentController {
             @RequestBody @Valid AssignmentCreationDto assignmentCreationDto) {
         log.debug("POST /courses/{}/assignments {}", courseId, assignmentCreationDto);
 
+        Person person = personService.getPersonByEmail(AuthUtil.getCurrentUsername());
+
         try {
             Course course = courseService.getById(courseId);
+
+            checkIfParticipates(course, person);
 
             Assignment assignment = assignmentAssembler.creationDtoToModel(assignmentCreationDto);
             assignment.setCourse(course);
@@ -86,8 +94,12 @@ public class AssignmentController {
             @RequestBody @Valid AssignmentCreationDto assignmentCreationDto) {
         log.debug("PUT /courses/{}/assignments/ {}", courseId, assignmentCreationDto);
 
+        Person person = personService.getPersonByEmail(AuthUtil.getCurrentUsername());
+
         try {
             Course course = courseService.getById(courseId);
+
+            checkIfParticipates(course, person);
 
             Assignment assignment = course.getAssignments().stream().filter((assignment1 ->
                     assignment1.getId().equals(assignmentId))).findFirst().orElseThrow(() ->
@@ -112,8 +124,12 @@ public class AssignmentController {
                                               @PathVariable(name = "assignmentId") Long assignmentId) {
         log.debug("DELETE /courses/{}/assignments/{}", courseId, assignmentId);
 
+        Person person = personService.getPersonByEmail(AuthUtil.getCurrentUsername());
+
         try {
             Course course = courseService.getById(courseId);
+
+            checkIfParticipates(course, person);
 
             Assignment assignment = course.getAssignments().stream().filter((assignment1 ->
                     assignment1.getId().equals(assignmentId))).findFirst().orElseThrow(() ->
@@ -126,6 +142,16 @@ public class AssignmentController {
             return ResponseEntity.noContent().build();
         } catch (ServiceException se) {
             throw new BadRequestException("Could not DELETE assignment!", se);
+        }
+    }
+
+    private void checkIfParticipates(Course course, Person person) {
+        try {
+            if (!participationService.checkIfParticipates(course, person)) {
+                throw new ForbiddenException("Access denied!");
+            }
+        } catch (ServiceException se) {
+            throw new InternalServerException("Could not check participation!", se);
         }
     }
 }

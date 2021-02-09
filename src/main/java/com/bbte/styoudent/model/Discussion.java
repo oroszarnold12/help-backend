@@ -23,9 +23,6 @@ public class Discussion extends BaseEntity {
     @Column(name = "date")
     private LocalDateTime date;
 
-    @ElementCollection
-    private List<String> comments;
-
     @ManyToOne
     @JoinColumn(name = "course_id")
     private Course course;
@@ -33,4 +30,7 @@ public class Discussion extends BaseEntity {
     @ManyToOne
     @JoinColumn(name = "creator_id")
     private Person creator;
+
+    @OneToMany(mappedBy = "discussion", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<DiscussionComment> discussionComments;
 }

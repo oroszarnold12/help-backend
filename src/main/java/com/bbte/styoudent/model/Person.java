@@ -43,4 +43,7 @@ public class Person extends BaseEntity {
 
     @OneToMany(mappedBy = "commenter", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<AnnouncementComment> announcementComments;
+
+    @OneToMany(mappedBy = "commenter", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<DiscussionComment> discussionComments;
 }
