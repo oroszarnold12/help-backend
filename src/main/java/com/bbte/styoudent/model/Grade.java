@@ -8,21 +8,18 @@ import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "submission")
+@Table(name = "grade")
 @Data
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
-public class Submission extends BaseEntity {
+public class Grade extends BaseEntity {
     @ManyToOne
     @JoinColumn(name = "submitter_id")
     private Person submitter;
     @ManyToOne
     @JoinColumn(name = "assignment_id")
     private Assignment assignment;
-    private LocalDateTime date;
-    private String fileName;
-    private String uploadedFileName;
+    private Double grade;
 }

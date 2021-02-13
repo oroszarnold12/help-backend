@@ -4,7 +4,6 @@ import com.bbte.styoudent.api.assembler.SubmissionAssembler;
 import com.bbte.styoudent.api.exception.ForbiddenException;
 import com.bbte.styoudent.api.exception.InternalServerException;
 import com.bbte.styoudent.api.exception.NotFoundException;
-import com.bbte.styoudent.dto.incoming.SubmissionGradeDto;
 import com.bbte.styoudent.dto.outgoing.SubmissionDto;
 import com.bbte.styoudent.model.*;
 import com.bbte.styoudent.security.util.AuthUtil;
@@ -19,7 +18,6 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -131,6 +129,8 @@ public class SubmissionController {
 
             Assignment assignment = getAssignment(course, assignmentId);
 
+            clearGrade(assignment, person);
+
             String uploadedFileName = fileStorageService.storeFile(file);
 
             Submission submission = new Submission();
@@ -147,41 +147,6 @@ public class SubmissionController {
             return ResponseEntity.ok(submissionAssembler.modelToDto(submission));
         } catch (ServiceException se) {
             throw new InternalServerException("Could not POST submission!", se);
-        }
-    }
-
-    @PutMapping("{submissionId}")
-    @PreAuthorize("hasRole('TEACHER')")
-    public ResponseEntity<SubmissionDto> putSubmission(
-            @PathVariable(name = "courseId") Long courseId,
-            @PathVariable(name = "assignmentId") Long assignmentId,
-            @PathVariable(name = "submissionId") Long submissionId,
-            @RequestBody @Valid SubmissionGradeDto submissionGradeDto
-            ) {
-        log.debug("PUT /courses/{}/assignments/{}/submissions/{}", courseId, assignmentId, submissionId);
-
-        Person person = personService.getPersonByEmail(AuthUtil.getCurrentUsername());
-
-        try {
-            Course course = courseService.getById(courseId);
-
-            checkIfParticipates(course, person);
-
-            Assignment assignment = getAssignment(course, assignmentId);
-
-            Submission submission = getSubmission(assignment, submissionId);
-
-            assignment.getSubmissions().forEach((submission1 -> {
-                if (submission1.getSubmitter().equals(submission.getSubmitter())) {
-                    submission1.setGrade(submissionGradeDto.getGrade());
-                }
-            }));
-
-            this.courseService.save(course);
-
-            return ResponseEntity.ok(submissionAssembler.modelToDto(submission));
-        } catch (ServiceException se) {
-            throw new InternalServerException("Could not PUT submission!", se);
         }
     }
 
@@ -205,5 +170,9 @@ public class SubmissionController {
         } catch (ServiceException se) {
             throw new InternalServerException("Could not check participation!", se);
         }
+    }
+
+    private void clearGrade(Assignment assignment, Person submitter) {
+        assignment.getGrades().removeIf((grade -> grade.getSubmitter().equals(submitter)));
     }
 }
