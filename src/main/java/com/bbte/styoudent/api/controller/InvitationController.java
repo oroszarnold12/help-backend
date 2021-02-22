@@ -41,6 +41,7 @@ public class InvitationController {
     }
 
     @GetMapping
+    @PreAuthorize("hasRole('TEACHER') or hasRole('STUDENT')")
     public ResponseEntity<Map<String, List<?>>> getInvitations() {
         log.debug("GET /invitations");
 
@@ -102,9 +103,10 @@ public class InvitationController {
         }
     }
 
-    @DeleteMapping("{id}/decline")
-    public ResponseEntity<ApiResponseMessage> declineInvitation(@PathVariable(name = "id") Long id) {
-        log.debug("DELETE /invitations/{}/decline", id);
+    @DeleteMapping("{id}")
+    public ResponseEntity<ApiResponseMessage> deleteInvitation(@PathVariable(name = "id") Long id,
+                                                               @RequestParam boolean accept) {
+        log.debug("DELETE /invitations/{}", id);
 
         Person person = personService.getPersonByEmail(AuthUtil.getCurrentUsername());
 
@@ -116,40 +118,24 @@ public class InvitationController {
             throw new InternalServerException("Could not check if invitation exists!", se);
         }
 
-        try {
-            invitationService.deleteInvitation(id);
+        if (accept) {
+            Invitation invitation = invitationService.getInvitationById(id).orElseThrow(() ->
+                    new BadRequestException("Could not GET invitation with id: " + id));
 
-            return ResponseEntity.ok().body(new ApiResponseMessage("Invitations with id: " + id + " declined!"));
-        } catch (ServiceException se) {
-            throw new BadRequestException("Could not DELETE invitation with id: " + id + "!", se);
-        }
-    }
-
-    @DeleteMapping("{id}/accept")
-    public ResponseEntity<ApiResponseMessage> acceptInvitation(@PathVariable(name = "id") Long id) {
-        log.debug("DELETE /invitations/{}/accept", id);
-
-        Person person = personService.getPersonByEmail(AuthUtil.getCurrentUsername());
-
-        try {
-            if (!invitationService.checkIfExistsByIdAndPerson(id, person)) {
-                throw new ForbiddenException("Access denied");
+            try {
+                participationService.createInitialParticipation(invitation.getCourse(), invitation.getPerson());
+            } catch (ServiceException se) {
+                throw new InternalServerException("Could not create participation!", se);
             }
-        } catch (ServiceException se) {
-            throw new InternalServerException("Could not check if invitation exists!", se);
         }
 
-        Invitation invitation = invitationService.getInvitationById(id).orElseThrow(() ->
-                new BadRequestException("Could not GET invitation with id: " + id));
-
         try {
-            participationService.createInitialParticipation(invitation.getCourse(), invitation.getPerson());
-
             invitationService.deleteInvitation(id);
 
             return ResponseEntity.ok().body(new ApiResponseMessage("Invitations with id: " + id + " accepted!"));
         } catch (ServiceException se) {
             throw new BadRequestException("Could not DELETE invitation with id: " + id + "!", se);
         }
+
     }
 }

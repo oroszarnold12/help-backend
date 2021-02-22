@@ -3,10 +3,9 @@ package com.bbte.styoudent.api.controller;
 import com.bbte.styoudent.api.assembler.GradeAssembler;
 import com.bbte.styoudent.api.exception.InternalServerException;
 import com.bbte.styoudent.dto.outgoing.GradeDto;
-import com.bbte.styoudent.model.Course;
 import com.bbte.styoudent.model.Person;
 import com.bbte.styoudent.security.util.AuthUtil;
-import com.bbte.styoudent.service.CourseService;
+import com.bbte.styoudent.service.AssignmentService;
 import com.bbte.styoudent.service.PersonService;
 import com.bbte.styoudent.service.ServiceException;
 import lombok.extern.slf4j.Slf4j;
@@ -25,14 +24,14 @@ import java.util.List;
 @RequestMapping("/courses/{courseId}/grades")
 public class CourseGradeController {
     private final PersonService personService;
-    private final CourseService courseService;
     private final GradeAssembler gradeAssembler;
+    private final AssignmentService assignmentService;
 
-    public CourseGradeController(PersonService personService, CourseService courseService,
-                                 GradeAssembler gradeAssembler) {
+    public CourseGradeController(PersonService personService, GradeAssembler gradeAssembler,
+                                 AssignmentService assignmentService) {
         this.personService = personService;
-        this.courseService = courseService;
         this.gradeAssembler = gradeAssembler;
+        this.assignmentService = assignmentService;
     }
 
     @GetMapping()
@@ -45,11 +44,9 @@ public class CourseGradeController {
         Person person = personService.getPersonByEmail(AuthUtil.getCurrentUsername());
 
         try {
-            Course course = courseService.getById(courseId);
-
             List<GradeDto> grades = new ArrayList<>();
 
-            course.getAssignments().forEach(assignment -> {
+            assignmentService.getByCourseId(courseId).forEach(assignment -> {
                 assignment.getGrades().forEach(grade -> {
                     if (grade.getSubmitter().equals(person)) {
                         grades.add(gradeAssembler.modelToDto(grade));

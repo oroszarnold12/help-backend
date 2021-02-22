@@ -11,10 +11,7 @@ import com.bbte.styoudent.model.Assignment;
 import com.bbte.styoudent.model.Course;
 import com.bbte.styoudent.model.Person;
 import com.bbte.styoudent.security.util.AuthUtil;
-import com.bbte.styoudent.service.CourseService;
-import com.bbte.styoudent.service.ParticipationService;
-import com.bbte.styoudent.service.PersonService;
-import com.bbte.styoudent.service.ServiceException;
+import com.bbte.styoudent.service.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -30,13 +27,16 @@ public class AssignmentController {
     private final PersonService personService;
     private final AssignmentAssembler assignmentAssembler;
     private final ParticipationService participationService;
+    private final AssignmentService assignmentService;
 
     public AssignmentController(CourseService courseService, PersonService personService,
-                                AssignmentAssembler assignmentAssembler, ParticipationService participationService) {
+                                AssignmentAssembler assignmentAssembler, ParticipationService participationService,
+                                AssignmentService assignmentService) {
         this.courseService = courseService;
         this.personService = personService;
         this.assignmentAssembler = assignmentAssembler;
         this.participationService = participationService;
+        this.assignmentService = assignmentService;
     }
 
     @GetMapping(value = "{assignmentId}")
@@ -46,17 +46,14 @@ public class AssignmentController {
         log.debug("GET /courses/{}/assignments/{}", courseId, assignmentId);
 
         Person person = personService.getPersonByEmail(AuthUtil.getCurrentUsername());
+        checkIfParticipates(courseId, person);
 
         try {
-            Course course = courseService.getCourseByPerson(person, courseId);
-
-            Assignment assignment = course.getAssignments().stream().filter((assignment1 ->
-                    assignment1.getId().equals(assignmentId))).findFirst().orElseThrow(() ->
-                    new NotFoundException("Assignment with id: " + assignmentId + " doesn't exists!"));
+            Assignment assignment = assignmentService.getByCourseIdAndId(courseId, assignmentId);
 
             return ResponseEntity.ok(assignmentAssembler.modelToDto(assignment));
         } catch (ServiceException se) {
-            throw new NotFoundException("Course with id:  " + courseId + " doesn't exists!", se);
+            throw new NotFoundException("Assignment with id:  " + courseId + " doesn't exists!", se);
         }
     }
 
@@ -68,19 +65,17 @@ public class AssignmentController {
         log.debug("POST /courses/{}/assignments {}", courseId, assignmentCreationDto);
 
         Person person = personService.getPersonByEmail(AuthUtil.getCurrentUsername());
+        checkIfParticipates(courseId, person);
 
         try {
             Course course = courseService.getById(courseId);
 
-            checkIfParticipates(course, person);
-
             Assignment assignment = assignmentAssembler.creationDtoToModel(assignmentCreationDto);
             assignment.setCourse(course);
 
-            course.getAssignments().add(assignment);
-            courseService.save(course);
-
-            return ResponseEntity.ok(assignmentAssembler.modelToDto(assignment));
+            return ResponseEntity.ok(assignmentAssembler.modelToDto(
+                    assignmentService.save(assignment)
+            ));
         } catch (ServiceException se) {
             throw new BadRequestException("Could not POST assignment!", se);
         }
@@ -95,22 +90,17 @@ public class AssignmentController {
         log.debug("PUT /courses/{}/assignments/ {}", courseId, assignmentCreationDto);
 
         Person person = personService.getPersonByEmail(AuthUtil.getCurrentUsername());
+        checkIfParticipates(courseId, person);
 
         try {
-            Course course = courseService.getById(courseId);
-
-            checkIfParticipates(course, person);
-
-            Assignment assignment = course.getAssignments().stream().filter((assignment1 ->
-                    assignment1.getId().equals(assignmentId))).findFirst().orElseThrow(() ->
-                    new NotFoundException("Assignment with id: " + assignmentId + " doesn't exists!"));
+            Assignment assignment = assignmentService.getByCourseIdAndId(courseId, assignmentId);
 
             assignment.setName(assignmentCreationDto.getName());
             assignment.setDueDate(assignmentCreationDto.getDueDate());
             assignment.setPoints(assignmentCreationDto.getPoints());
             assignment.setDescription(assignmentCreationDto.getDescription());
 
-            courseService.save(course);
+            assignmentService.save(assignment);
 
             return ResponseEntity.ok(assignmentAssembler.modelToDto(assignment));
         } catch (ServiceException se) {
@@ -125,19 +115,11 @@ public class AssignmentController {
         log.debug("DELETE /courses/{}/assignments/{}", courseId, assignmentId);
 
         Person person = personService.getPersonByEmail(AuthUtil.getCurrentUsername());
+        checkIfParticipates(courseId, person);
+        checkIfHasThisAssignment(courseId, assignmentId);
 
         try {
-            Course course = courseService.getById(courseId);
-
-            checkIfParticipates(course, person);
-
-            Assignment assignment = course.getAssignments().stream().filter((assignment1 ->
-                    assignment1.getId().equals(assignmentId))).findFirst().orElseThrow(() ->
-                    new NotFoundException("Assignment with id: " + assignmentId + " doesn't exists!"));
-
-            course.getAssignments().remove(assignment);
-
-            courseService.save(course);
+            assignmentService.delete(assignmentId);
 
             return ResponseEntity.noContent().build();
         } catch (ServiceException se) {
@@ -145,13 +127,25 @@ public class AssignmentController {
         }
     }
 
-    private void checkIfParticipates(Course course, Person person) {
+    private void checkIfParticipates(Long courseId, Person person) {
         try {
-            if (!participationService.checkIfParticipates(course, person)) {
+            if (!participationService.checkIfParticipates(courseId, person)) {
                 throw new ForbiddenException("Access denied!");
             }
         } catch (ServiceException se) {
             throw new InternalServerException("Could not check participation!", se);
+        }
+    }
+
+    private void checkIfHasThisAssignment(Long courseId, Long assignmentId) {
+        try {
+            if (!assignmentService.checkIfExistsByCourseIdAndId(courseId, assignmentId)) {
+                throw new BadRequestException(
+                        "Course with id: " + courseId + " has no assignment with id: " + assignmentId + "!"
+                );
+            }
+        } catch (ServiceException se) {
+            throw new InternalServerException("Could not check assignment!", se);
         }
     }
 }

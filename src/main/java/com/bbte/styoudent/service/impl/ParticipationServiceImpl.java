@@ -42,4 +42,13 @@ public class ParticipationServiceImpl implements ParticipationService {
             throw new ServiceException("Participation checking failed!", de);
         }
     }
+
+    @Override
+    public boolean checkIfParticipates(Long courseId, Person person) {
+        try {
+            return participationRepository.existsByCourseIdAndPerson(courseId, person);
+        } catch (DataAccessException de) {
+            throw new ServiceException("Participation checking failed!", de);
+        }
+    }
 }

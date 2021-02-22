@@ -9,10 +9,7 @@ import com.bbte.styoudent.dto.incoming.DiscussionCommentCreationDto;
 import com.bbte.styoudent.dto.outgoing.DiscussionCommentDto;
 import com.bbte.styoudent.model.*;
 import com.bbte.styoudent.security.util.AuthUtil;
-import com.bbte.styoudent.service.CourseService;
-import com.bbte.styoudent.service.ParticipationService;
-import com.bbte.styoudent.service.PersonService;
-import com.bbte.styoudent.service.ServiceException;
+import com.bbte.styoudent.service.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -25,18 +22,21 @@ import java.time.LocalDateTime;
 @RestController
 @RequestMapping("/courses/{courseId}/discussions/{discussionId}/comments")
 public class DiscussionCommentController {
-    private final CourseService courseService;
     private final PersonService personService;
     private final DiscussionCommentAssembler discussionCommentAssembler;
     private final ParticipationService participationService;
+    private final DiscussionService discussionService;
+    private final DiscussionCommentService discussionCommentService;
 
-    public DiscussionCommentController(CourseService courseService, PersonService personService,
+    public DiscussionCommentController(PersonService personService,
                                        DiscussionCommentAssembler discussionCommentAssembler,
-                                       ParticipationService participationService) {
-        this.courseService = courseService;
+                                       ParticipationService participationService, DiscussionService discussionService,
+                                       DiscussionCommentService discussionCommentService) {
         this.personService = personService;
         this.discussionCommentAssembler = discussionCommentAssembler;
         this.participationService = participationService;
+        this.discussionService = discussionService;
+        this.discussionCommentService = discussionCommentService;
     }
 
     @PostMapping()
@@ -49,12 +49,10 @@ public class DiscussionCommentController {
                 discussionCommentCreationDto);
 
         Person person = personService.getPersonByEmail(AuthUtil.getCurrentUsername());
+        checkIfParticipates(courseId, person);
 
         try {
-            Course course = getCourse(courseId);
-            Discussion discussion = getDiscussion(course, discussionId);
-
-            checkIfParticipates(course, person);
+            Discussion discussion = discussionService.getByCourseIdAndId(courseId, discussionId);
 
             DiscussionComment discussionComment = discussionCommentAssembler.creationDtoToModel(
                     discussionCommentCreationDto
@@ -63,11 +61,9 @@ public class DiscussionCommentController {
             discussionComment.setCommenter(person);
             discussionComment.setDiscussion(discussion);
 
-            discussion.getDiscussionComments().add(discussionComment);
-
-            courseService.save(course);
-
-            return ResponseEntity.ok(discussionCommentAssembler.modelToDto(discussionComment));
+            return ResponseEntity.ok(discussionCommentAssembler.modelToDto(
+                    discussionCommentService.save(discussionComment)
+            ));
         } catch (ServiceException se) {
             throw new BadRequestException("Could not POST comment!", se);
         }
@@ -84,11 +80,11 @@ public class DiscussionCommentController {
                 discussionCommentId, discussionCommentCreationDto);
 
         Person person = personService.getPersonByEmail(AuthUtil.getCurrentUsername());
+        checkIfHasThisDiscussion(courseId, discussionId);
 
         try {
-            Course course = getCourse(courseId);
-            Discussion discussion = getDiscussion(course, discussionId);
-            DiscussionComment discussionComment = getComment(discussion, discussionCommentId);
+            DiscussionComment discussionComment = discussionCommentService.getByDiscussionIdAndId(discussionId,
+                    discussionCommentId);
 
             if (!discussionComment.getCommenter().equals(person)) {
                 throw new ForbiddenException("Access denied!");
@@ -96,7 +92,7 @@ public class DiscussionCommentController {
 
             discussionComment.setContent(discussionCommentCreationDto.getContent());
 
-            courseService.save(course);
+            discussionCommentService.save(discussionComment);
 
             return ResponseEntity.ok(discussionCommentAssembler.modelToDto(discussionComment));
         } catch (ServiceException se) {
@@ -114,19 +110,17 @@ public class DiscussionCommentController {
                 discussionCommentId);
 
         Person person = personService.getPersonByEmail(AuthUtil.getCurrentUsername());
+        checkIfHasThisDiscussion(courseId, discussionId);
 
         try {
-            Course course = getCourse(courseId);
-            Discussion discussion = getDiscussion(course, discussionId);
-            DiscussionComment discussionComment = getComment(discussion, discussionCommentId);
+            DiscussionComment discussionComment = discussionCommentService.getByDiscussionIdAndId(discussionId,
+                    discussionCommentId);
 
             if (!discussionComment.getCommenter().equals(person)) {
                 throw new ForbiddenException("Access denied!");
             }
 
-            discussion.getDiscussionComments().remove(discussionComment);
-
-            courseService.save(course);
+            discussionCommentService.delete(discussionCommentId);
 
             return ResponseEntity.noContent().build();
         } catch (ServiceException se) {
@@ -134,30 +128,25 @@ public class DiscussionCommentController {
         }
     }
 
-    private DiscussionComment getComment(Discussion discussion, Long discussionCommentId) {
-        return discussion.getDiscussionComments().stream()
-                .filter((discussionComment -> discussionComment.getId().equals(discussionCommentId)))
-                .findFirst().orElseThrow(() ->
-                        new NotFoundException("Comment with id: " + discussionCommentId + " doesn't exists!"));
-    }
-
-    private Course getCourse(Long courseId) {
-        return courseService.getById(courseId);
-    }
-
-    private Discussion getDiscussion(Course course, Long discussionId) {
-        return course.getDiscussions().stream().filter((discussion ->
-                discussion.getId().equals(discussionId))).findFirst().orElseThrow(() ->
-                new NotFoundException("Discussion with id: " + discussionId + " doesn't exists!"));
-    }
-
-    private void checkIfParticipates(Course course, Person person) {
+    private void checkIfParticipates(Long courseId, Person person) {
         try {
-            if (!participationService.checkIfParticipates(course, person)) {
+            if (!participationService.checkIfParticipates(courseId, person)) {
                 throw new ForbiddenException("Access denied!");
             }
         } catch (ServiceException se) {
             throw new InternalServerException("Could not check participation!", se);
+        }
+    }
+
+    private void checkIfHasThisDiscussion(Long courseId, Long discussionId) {
+        try {
+            if (!discussionService.checkIfExistsByCourseIdAndId(courseId, discussionId)) {
+                throw new BadRequestException(
+                        "Course with id: " + courseId + " has no discussion with id: " + discussionId + "!"
+                );
+            }
+        } catch (ServiceException se) {
+            throw new InternalServerException("Could not check discussion!", se);
         }
     }
 }

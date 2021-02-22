@@ -12,10 +12,7 @@ import com.bbte.styoudent.model.Discussion;
 import com.bbte.styoudent.model.Person;
 import com.bbte.styoudent.model.Role;
 import com.bbte.styoudent.security.util.AuthUtil;
-import com.bbte.styoudent.service.CourseService;
-import com.bbte.styoudent.service.ParticipationService;
-import com.bbte.styoudent.service.PersonService;
-import com.bbte.styoudent.service.ServiceException;
+import com.bbte.styoudent.service.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -32,13 +29,16 @@ public class DiscussionController {
     private final PersonService personService;
     private final DiscussionAssembler discussionAssembler;
     private final ParticipationService participationService;
+    private final DiscussionService discussionService;
 
     public DiscussionController(CourseService courseService, PersonService personService,
-                                DiscussionAssembler discussionAssembler, ParticipationService participationService) {
+                                DiscussionAssembler discussionAssembler, ParticipationService participationService,
+                                DiscussionService discussionService) {
         this.courseService = courseService;
         this.personService = personService;
         this.discussionAssembler = discussionAssembler;
         this.participationService = participationService;
+        this.discussionService = discussionService;
     }
 
     @GetMapping(value = "{discussionId}")
@@ -48,17 +48,14 @@ public class DiscussionController {
         log.debug("GET /courses/{}/discussions/{}", courseId, discussionId);
 
         Person person = personService.getPersonByEmail(AuthUtil.getCurrentUsername());
+        checkIfParticipates(courseId, person);
 
         try {
-            Course course = courseService.getCourseByPerson(person, courseId);
-
-            Discussion discussion = course.getDiscussions().stream().filter((discussion1 ->
-                    discussion1.getId().equals(discussionId))).findFirst().orElseThrow(() ->
-                    new NotFoundException("Discussion with id: " + discussionId + " doesn't exists!"));
+            Discussion discussion = discussionService.getByCourseIdAndId(courseId, discussionId);
 
             return ResponseEntity.ok(discussionAssembler.modelToDto(discussion));
         } catch (ServiceException se) {
-            throw new NotFoundException("Course with id:  " + courseId + " doesn't exists!", se);
+            throw new NotFoundException("Discussion with id:  " + courseId + " doesn't exists!", se);
         }
     }
 
@@ -70,21 +67,19 @@ public class DiscussionController {
         log.debug("POST /courses/{}/discussions {}", courseId, discussionCreationDto);
 
         Person person = personService.getPersonByEmail(AuthUtil.getCurrentUsername());
+        checkIfParticipates(courseId, person);
 
         try {
             Course course = courseService.getById(courseId);
-
-            checkIfParticipates(course, person);
 
             Discussion discussion = discussionAssembler.creationDtoToModel(discussionCreationDto);
             discussion.setCourse(course);
             discussion.setDate(LocalDateTime.now());
             discussion.setCreator(person);
 
-            course.getDiscussions().add(discussion);
-            courseService.save(course);
-
-            return ResponseEntity.ok(discussionAssembler.modelToDto(discussion));
+            return ResponseEntity.ok(discussionAssembler.modelToDto(
+                    discussionService.save(discussion)
+            ));
         } catch (ServiceException se) {
             throw new BadRequestException("Could not POST discussion!", se);
         }
@@ -101,9 +96,7 @@ public class DiscussionController {
         Person person = personService.getPersonByEmail(AuthUtil.getCurrentUsername());
 
         try {
-            Course course = courseService.getById(courseId);
-
-            Discussion discussion = getDiscussion(course, discussionId);
+            Discussion discussion = discussionService.getByCourseIdAndId(courseId, discussionId);
 
             if (!discussion.getCreator().equals(person) && !person.getRole().equals(Role.ROLE_TEACHER)) {
                 throw new ForbiddenException("Access denied!");
@@ -112,7 +105,7 @@ public class DiscussionController {
             discussion.setName(discussionCreationDto.getName());
             discussion.setContent(discussionCreationDto.getContent());
 
-            courseService.save(course);
+            discussionService.save(discussion);
 
             return ResponseEntity.ok(discussionAssembler.modelToDto(discussion));
         } catch (ServiceException se) {
@@ -127,19 +120,16 @@ public class DiscussionController {
         log.debug("DELETE /courses/{}/discussions/{}", courseId, discussionId);
 
         Person person = personService.getPersonByEmail(AuthUtil.getCurrentUsername());
+        checkIfHasThisDiscussion(courseId, discussionId);
 
         try {
-            Course course = courseService.getById(courseId);
-
-            Discussion discussion = getDiscussion(course, discussionId);
+            Discussion discussion = discussionService.getByCourseIdAndId(courseId, discussionId);
 
             if (!discussion.getCreator().equals(person) && !person.getRole().equals(Role.ROLE_TEACHER)) {
                 throw new ForbiddenException("Access denied!");
             }
 
-            course.getDiscussions().remove(discussion);
-
-            courseService.save(course);
+            discussionService.delete(discussionId);
 
             return ResponseEntity.noContent().build();
         } catch (ServiceException se) {
@@ -147,19 +137,25 @@ public class DiscussionController {
         }
     }
 
-    private Discussion getDiscussion(Course course, Long discussionId) {
-        return course.getDiscussions().stream().filter((discussion1 ->
-                discussion1.getId().equals(discussionId))).findFirst().orElseThrow(() ->
-                new NotFoundException("Discussion with id: " + discussionId + " doesn't exists!"));
-    }
-
-    private void checkIfParticipates(Course course, Person person) {
+    private void checkIfParticipates(Long courseId, Person person) {
         try {
-            if (!participationService.checkIfParticipates(course, person)) {
+            if (!participationService.checkIfParticipates(courseId, person)) {
                 throw new ForbiddenException("Access denied!");
             }
         } catch (ServiceException se) {
             throw new InternalServerException("Could not check participation!", se);
+        }
+    }
+
+    private void checkIfHasThisDiscussion(Long courseId, Long discussionId) {
+        try {
+            if (!discussionService.checkIfExistsByCourseIdAndId(courseId, discussionId)) {
+                throw new BadRequestException(
+                        "Course with id: " + courseId + " has no discussion with id: " + discussionId + "!"
+                );
+            }
+        } catch (ServiceException se) {
+            throw new InternalServerException("Could not check discussion!", se);
         }
     }
 }

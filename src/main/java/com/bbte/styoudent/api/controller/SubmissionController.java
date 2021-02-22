@@ -1,11 +1,14 @@
 package com.bbte.styoudent.api.controller;
 
 import com.bbte.styoudent.api.assembler.SubmissionAssembler;
+import com.bbte.styoudent.api.exception.BadRequestException;
 import com.bbte.styoudent.api.exception.ForbiddenException;
 import com.bbte.styoudent.api.exception.InternalServerException;
-import com.bbte.styoudent.api.exception.NotFoundException;
 import com.bbte.styoudent.dto.outgoing.SubmissionDto;
-import com.bbte.styoudent.model.*;
+import com.bbte.styoudent.model.Assignment;
+import com.bbte.styoudent.model.Person;
+import com.bbte.styoudent.model.Role;
+import com.bbte.styoudent.model.Submission;
 import com.bbte.styoudent.security.util.AuthUtil;
 import com.bbte.styoudent.service.*;
 import lombok.extern.slf4j.Slf4j;
@@ -30,18 +33,23 @@ import java.util.stream.Collectors;
 public class SubmissionController {
     private final FileStorageService fileStorageService;
     private final PersonService personService;
-    private final CourseService courseService;
     private final ParticipationService participationService;
     private final SubmissionAssembler submissionAssembler;
+    private final AssignmentService assignmentService;
+    private final SubmissionService submissionService;
+    private final GradeService gradeService;
 
     public SubmissionController(FileStorageService fileStorageService, PersonService personService,
-                                CourseService courseService, ParticipationService participationService,
-                                SubmissionAssembler submissionAssembler) {
+                                ParticipationService participationService,
+                                SubmissionAssembler submissionAssembler, AssignmentService assignmentService,
+                                SubmissionService submissionService, GradeService gradeService) {
         this.fileStorageService = fileStorageService;
         this.personService = personService;
-        this.courseService = courseService;
         this.participationService = participationService;
         this.submissionAssembler = submissionAssembler;
+        this.assignmentService = assignmentService;
+        this.submissionService = submissionService;
+        this.gradeService = gradeService;
     }
 
     @GetMapping()
@@ -53,21 +61,16 @@ public class SubmissionController {
         log.debug("GET /courses/{}/assignments/{}/submissions", courseId, assignmentId);
 
         Person person = personService.getPersonByEmail(AuthUtil.getCurrentUsername());
+        checkIfParticipates(courseId, person);
+        checkIfHasThisAssignment(courseId, assignmentId);
 
         try {
-            Course course = courseService.getById(courseId);
-
-            checkIfParticipates(course, person);
-
-            Assignment assignment = getAssignment(course, assignmentId);
-
             if (person.getRole().equals(Role.ROLE_STUDENT)) {
-                return ResponseEntity.ok(assignment.getSubmissions().stream().filter((submission ->
-                        submission.getSubmitter().equals(person)))
-                        .map(submissionAssembler::modelToDto)
+                return ResponseEntity.ok(submissionService.getByAssignmentIdAndBySubmitter(assignmentId, person)
+                        .stream().map(submissionAssembler::modelToDto)
                         .collect(Collectors.toList()));
             } else {
-                return ResponseEntity.ok(assignment.getSubmissions().stream()
+                return ResponseEntity.ok(submissionService.getByAssignmentId(assignmentId).stream()
                         .map(submissionAssembler::modelToDto)
                         .collect(Collectors.toList()));
             }
@@ -86,15 +89,11 @@ public class SubmissionController {
         log.debug("GET /courses/{}/assignments/{}/submissions/{}", courseId, assignmentId, submissionId);
 
         Person person = personService.getPersonByEmail(AuthUtil.getCurrentUsername());
+        checkIfParticipates(courseId, person);
+        checkIfHasThisAssignment(courseId, assignmentId);
 
         try {
-            Course course = courseService.getById(courseId);
-
-            checkIfParticipates(course, person);
-
-            Assignment assignment = getAssignment(course, assignmentId);
-
-            Submission submission = getSubmission(assignment, submissionId);
+            Submission submission = submissionService.getByAssignmentIdAndId(assignmentId, submissionId);
 
             if (person.getRole().equals(Role.ROLE_STUDENT) && !submission.getSubmitter().equals(person)) {
                 throw new ForbiddenException("Access denied!");
@@ -121,15 +120,12 @@ public class SubmissionController {
         log.debug("POST /courses/{}/assignments/{}/submissions", courseId, assignmentId);
 
         Person person = personService.getPersonByEmail(AuthUtil.getCurrentUsername());
+        checkIfParticipates(courseId, person);
 
         try {
-            Course course = courseService.getById(courseId);
+            Assignment assignment = assignmentService.getByCourseIdAndId(courseId, assignmentId);
 
-            checkIfParticipates(course, person);
-
-            Assignment assignment = getAssignment(course, assignmentId);
-
-            clearGrade(assignment, person);
+            gradeService.deleteByAssignmentIdAndSubmitterId(assignment.getId(), person.getId());
 
             String uploadedFileName = fileStorageService.storeFile(file);
 
@@ -140,31 +136,17 @@ public class SubmissionController {
             submission.setFileName(StringUtils.cleanPath(Objects.requireNonNull(file.getOriginalFilename())));
             submission.setUploadedFileName(uploadedFileName);
 
-            assignment.getSubmissions().add(submission);
-
-            this.courseService.save(course);
-
-            return ResponseEntity.ok(submissionAssembler.modelToDto(submission));
+            return ResponseEntity.ok(submissionAssembler.modelToDto(
+                    submissionService.save(submission)
+            ));
         } catch (ServiceException se) {
             throw new InternalServerException("Could not POST submission!", se);
         }
     }
 
-    private Assignment getAssignment(Course course, Long assignmentId) {
-        return course.getAssignments().stream().filter((assignment1 ->
-                assignment1.getId().equals(assignmentId))).findFirst().orElseThrow(() ->
-                new NotFoundException("Assignment with id: " + assignmentId + " doesn't exists!"));
-    }
-
-    private Submission getSubmission(Assignment assignment, Long submissionId) {
-        return assignment.getSubmissions().stream().filter((submission ->
-                submission.getId().equals(submissionId))).findFirst().orElseThrow(() ->
-                new NotFoundException("Submission with id: " + submissionId + " doesn't exists"));
-    }
-
-    private void checkIfParticipates(Course course, Person person) {
+    private void checkIfParticipates(Long courseId, Person person) {
         try {
-            if (!participationService.checkIfParticipates(course, person)) {
+            if (!participationService.checkIfParticipates(courseId, person)) {
                 throw new ForbiddenException("Access denied!");
             }
         } catch (ServiceException se) {
@@ -172,7 +154,15 @@ public class SubmissionController {
         }
     }
 
-    private void clearGrade(Assignment assignment, Person submitter) {
-        assignment.getGrades().removeIf((grade -> grade.getSubmitter().equals(submitter)));
+    private void checkIfHasThisAssignment(Long courseId, Long assignmentId) {
+        try {
+            if (!assignmentService.checkIfExistsByCourseIdAndId(courseId, assignmentId)) {
+                throw new BadRequestException(
+                        "Course with id: " + courseId + " has no assignment with id: " + assignmentId + "!"
+                );
+            }
+        } catch (ServiceException se) {
+            throw new InternalServerException("Could not check assignment!", se);
+        }
     }
 }

@@ -90,7 +90,6 @@ public class CourseController {
         try {
             Course course = courseAssembler.creationDtoToModel(courseCreationDto);
             course.setTeacher(person);
-            person.getCourses().add(course);
             courseService.save(course);
             participationService.createInitialParticipation(course, person);
 

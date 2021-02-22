@@ -1,0 +1,22 @@
+version: '3'
+services:
+  styoudent-db:
+    restart: always
+    container_name: styoudent-db
+    image: postgres:10.15-alpine
+    environment:
+      POSTGRES_ROOT_PASSWORD: rootPassword
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: UwMnRZ8ds8aioT
+      POSTGRES_DATABASE: styoudent
+    ports:
+      -  5433:5432
+
+  styoudent-web:
+    build: ./
+    expose:
+      - 8080
+    ports:
+      - 8080:8080
+    depends_on:
+      - styoudent-db

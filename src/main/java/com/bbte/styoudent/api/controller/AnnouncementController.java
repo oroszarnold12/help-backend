@@ -11,10 +11,7 @@ import com.bbte.styoudent.model.Announcement;
 import com.bbte.styoudent.model.Course;
 import com.bbte.styoudent.model.Person;
 import com.bbte.styoudent.security.util.AuthUtil;
-import com.bbte.styoudent.service.CourseService;
-import com.bbte.styoudent.service.ParticipationService;
-import com.bbte.styoudent.service.PersonService;
-import com.bbte.styoudent.service.ServiceException;
+import com.bbte.styoudent.service.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -31,14 +28,16 @@ public class AnnouncementController {
     private final PersonService personService;
     private final AnnouncementAssembler announcementAssembler;
     private final ParticipationService participationService;
+    private final AnnouncementService announcementService;
 
     public AnnouncementController(CourseService courseService, PersonService personService,
                                   AnnouncementAssembler announcementAssembler,
-                                  ParticipationService participationService) {
+                                  ParticipationService participationService, AnnouncementService announcementService) {
         this.courseService = courseService;
         this.personService = personService;
         this.announcementAssembler = announcementAssembler;
         this.participationService = participationService;
+        this.announcementService = announcementService;
     }
 
     @GetMapping(value = "{announcementId}")
@@ -48,17 +47,14 @@ public class AnnouncementController {
         log.debug("GET /courses/{}/announcements/{}", courseId, announcementId);
 
         Person person = personService.getPersonByEmail(AuthUtil.getCurrentUsername());
+        checkIfParticipates(courseId, person);
 
         try {
-            Course course = courseService.getCourseByPerson(person, courseId);
-
-            Announcement announcement = course.getAnnouncements().stream().filter((announcement1 ->
-                    announcement1.getId().equals(announcementId))).findFirst().orElseThrow(() ->
-                    new NotFoundException("Announcement with id: " + announcementId + " doesn't exists!"));
+            Announcement announcement = announcementService.getByCourseIdAndId(courseId, announcementId);
 
             return ResponseEntity.ok(announcementAssembler.modelToDto(announcement));
         } catch (ServiceException se) {
-            throw new NotFoundException("Course with id:  " + courseId + " doesn't exists!", se);
+            throw new NotFoundException("Announcement with id:  " + announcementId + " doesn't exists!", se);
         }
     }
 
@@ -70,21 +66,19 @@ public class AnnouncementController {
         log.debug("POST /courses/{}/announcements {}", courseId, announcementCreationDto);
 
         Person person = personService.getPersonByEmail(AuthUtil.getCurrentUsername());
+        checkIfParticipates(courseId, person);
 
         try {
             Course course = courseService.getById(courseId);
-
-            checkIfParticipates(course, person);
 
             Announcement announcement = announcementAssembler.creationDtoToModel(announcementCreationDto);
             announcement.setCourse(course);
             announcement.setCreator(person);
             announcement.setDate(LocalDateTime.now());
 
-            course.getAnnouncements().add(announcement);
-            courseService.save(course);
-
-            return ResponseEntity.ok(announcementAssembler.modelToDto(announcement));
+            return ResponseEntity.ok(announcementAssembler.modelToDto(
+                    announcementService.save(announcement)
+            ));
         } catch (ServiceException se) {
             throw new BadRequestException("Could not POST announcement!", se);
         }
@@ -99,19 +93,14 @@ public class AnnouncementController {
         log.debug("PUT /courses/{}/announcements {}", courseId, announcementCreationDto);
 
         Person person = personService.getPersonByEmail(AuthUtil.getCurrentUsername());
+        checkIfParticipates(courseId, person);
 
         try {
-            Course course = courseService.getById(courseId);
-
-            checkIfParticipates(course, person);
-
-            Announcement announcement = course.getAnnouncements().stream().filter((announcement1 ->
-                    announcement1.getId().equals(announcementId))).findFirst().orElseThrow(() ->
-                    new NotFoundException("Announcement with id: " + announcementId + " doesn't exists!"));
+            Announcement announcement = announcementService.getByCourseIdAndId(courseId, announcementId);
             announcement.setName(announcementCreationDto.getName());
             announcement.setContent(announcementCreationDto.getContent());
 
-            courseService.save(course);
+            announcementService.save(announcement);
 
             return ResponseEntity.ok(announcementAssembler.modelToDto(announcement));
         } catch (ServiceException se) {
@@ -126,19 +115,11 @@ public class AnnouncementController {
         log.debug("DELETE /courses/{}/announcements/{}", courseId, announcementId);
 
         Person person = personService.getPersonByEmail(AuthUtil.getCurrentUsername());
+        checkIfParticipates(courseId, person);
+        checkIfHasThisAnnouncement(courseId, announcementId);
 
         try {
-            Course course = courseService.getById(courseId);
-
-            checkIfParticipates(course, person);
-
-            Announcement announcement = course.getAnnouncements().stream().filter((announcement1 ->
-                    announcement1.getId().equals(announcementId))).findFirst().orElseThrow(() ->
-                    new NotFoundException("Announcement with id: " + announcementId + " doesn't exists!"));
-
-            course.getAnnouncements().remove(announcement);
-
-            courseService.save(course);
+           announcementService.delete(announcementId);
 
             return ResponseEntity.noContent().build();
         } catch (ServiceException se) {
@@ -146,13 +127,25 @@ public class AnnouncementController {
         }
     }
 
-    private void checkIfParticipates(Course course, Person person) {
+    private void checkIfParticipates(Long courseId, Person person) {
         try {
-            if (!participationService.checkIfParticipates(course, person)) {
+            if (!participationService.checkIfParticipates(courseId, person)) {
                 throw new ForbiddenException("Access denied!");
             }
         } catch (ServiceException se) {
             throw new InternalServerException("Could not check participation!", se);
+        }
+    }
+
+    private void checkIfHasThisAnnouncement(Long courseId, Long announcementId) {
+        try {
+            if (!announcementService.checkIfExistsByCourseIdAndId(courseId, announcementId)) {
+                throw new BadRequestException(
+                        "Course with id: " + courseId + " has no announcement with id: " + announcementId + "!"
+                );
+            }
+        } catch (ServiceException se) {
+            throw new InternalServerException("Could not check announcement!", se);
         }
     }
 }

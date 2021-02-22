@@ -4,18 +4,13 @@ import com.bbte.styoudent.api.assembler.AnnouncementCommentAssembler;
 import com.bbte.styoudent.api.exception.BadRequestException;
 import com.bbte.styoudent.api.exception.ForbiddenException;
 import com.bbte.styoudent.api.exception.InternalServerException;
-import com.bbte.styoudent.api.exception.NotFoundException;
 import com.bbte.styoudent.dto.incoming.AnnouncementCommentCreationDto;
 import com.bbte.styoudent.dto.outgoing.AnnouncementCommentDto;
 import com.bbte.styoudent.model.Announcement;
 import com.bbte.styoudent.model.AnnouncementComment;
-import com.bbte.styoudent.model.Course;
 import com.bbte.styoudent.model.Person;
 import com.bbte.styoudent.security.util.AuthUtil;
-import com.bbte.styoudent.service.CourseService;
-import com.bbte.styoudent.service.ParticipationService;
-import com.bbte.styoudent.service.PersonService;
-import com.bbte.styoudent.service.ServiceException;
+import com.bbte.styoudent.service.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -29,17 +24,21 @@ import java.time.LocalDateTime;
 @RequestMapping("/courses/{courseId}/announcements/{announcementId}/comments")
 public class AnnouncementCommentController {
     private final PersonService personService;
-    private final CourseService courseService;
     private final AnnouncementCommentAssembler announcementCommentAssembler;
     private final ParticipationService participationService;
+    private final AnnouncementService announcementService;
+    private final AnnouncementCommentService announcementCommentService;
 
-    public AnnouncementCommentController(PersonService personService, CourseService courseService,
+    public AnnouncementCommentController(PersonService personService,
                                          AnnouncementCommentAssembler announcementCommentAssembler,
-                                         ParticipationService participationService) {
+                                         ParticipationService participationService,
+                                         AnnouncementService announcementService,
+                                         AnnouncementCommentService announcementCommentService) {
         this.personService = personService;
-        this.courseService = courseService;
         this.announcementCommentAssembler = announcementCommentAssembler;
         this.participationService = participationService;
+        this.announcementService = announcementService;
+        this.announcementCommentService = announcementCommentService;
     }
 
     @PostMapping()
@@ -52,12 +51,10 @@ public class AnnouncementCommentController {
                 announcementCommentCreationDto);
 
         Person person = personService.getPersonByEmail(AuthUtil.getCurrentUsername());
+        checkIfParticipates(courseId, person);
 
         try {
-            Course course = getCourse(courseId);
-            Announcement announcement = getAnnouncement(course, announcementId);
-
-            checkIfParticipates(course, person);
+            Announcement announcement = announcementService.getByCourseIdAndId(courseId, announcementId);
 
             AnnouncementComment announcementComment = announcementCommentAssembler.creationDtoToModel(
                     announcementCommentCreationDto
@@ -66,11 +63,9 @@ public class AnnouncementCommentController {
             announcementComment.setCommenter(person);
             announcementComment.setAnnouncement(announcement);
 
-            announcement.getAnnouncementComments().add(announcementComment);
-
-            courseService.save(course);
-
-            return ResponseEntity.ok(announcementCommentAssembler.modelToDto(announcementComment));
+            return ResponseEntity.ok(announcementCommentAssembler.modelToDto(
+                    announcementCommentService.save(announcementComment)
+            ));
         } catch (ServiceException se) {
             throw new BadRequestException("Could not POST comment!", se);
         }
@@ -87,11 +82,12 @@ public class AnnouncementCommentController {
                 announcementCommentId, announcementCommentCreationDto);
 
         Person person = personService.getPersonByEmail(AuthUtil.getCurrentUsername());
+        checkIfHasThisAnnouncement(courseId, announcementId);
 
         try {
-            Course course = getCourse(courseId);
-            Announcement announcement = getAnnouncement(course, announcementId);
-            AnnouncementComment announcementComment = getComment(announcement, announcementCommentId);
+            AnnouncementComment announcementComment = announcementCommentService.getByAnnouncementIdAndId(
+                    announcementId, announcementCommentId
+            );
 
             if (!announcementComment.getCommenter().equals(person)) {
                 throw new ForbiddenException("Access denied!");
@@ -99,7 +95,7 @@ public class AnnouncementCommentController {
 
             announcementComment.setContent(announcementCommentCreationDto.getContent());
 
-            courseService.save(course);
+            announcementCommentService.save(announcementComment);
 
             return ResponseEntity.ok(announcementCommentAssembler.modelToDto(announcementComment));
         } catch (ServiceException se) {
@@ -117,19 +113,18 @@ public class AnnouncementCommentController {
                 announcementCommentId);
 
         Person person = personService.getPersonByEmail(AuthUtil.getCurrentUsername());
+        checkIfHasThisAnnouncement(courseId, announcementId);
 
         try {
-            Course course = getCourse(courseId);
-            Announcement announcement = getAnnouncement(course, announcementId);
-            AnnouncementComment announcementComment = getComment(announcement, announcementCommentId);
+            AnnouncementComment announcementComment = announcementCommentService.getByAnnouncementIdAndId(
+                    announcementId, announcementCommentId
+            );
 
             if (!announcementComment.getCommenter().equals(person)) {
                 throw new ForbiddenException("Access denied!");
             }
 
-            announcement.getAnnouncementComments().remove(announcementComment);
-
-            courseService.save(course);
+            announcementCommentService.deleteById(announcementCommentId);
 
             return ResponseEntity.noContent().build();
         } catch (ServiceException se) {
@@ -137,30 +132,25 @@ public class AnnouncementCommentController {
         }
     }
 
-    private AnnouncementComment getComment(Announcement announcement, Long announcementCommentId) {
-        return announcement.getAnnouncementComments().stream()
-                .filter((announcementComment1 -> announcementComment1.getId().equals(announcementCommentId)))
-                .findFirst().orElseThrow(() ->
-                        new NotFoundException("Comment with id: " + announcementCommentId + " doesn't exists!"));
-    }
-
-    private Course getCourse(Long courseId) {
-        return courseService.getById(courseId);
-    }
-
-    private Announcement getAnnouncement(Course course, Long announcementId) {
-        return course.getAnnouncements().stream().filter((announcement1 ->
-                announcement1.getId().equals(announcementId))).findFirst().orElseThrow(() ->
-                new NotFoundException("Announcement with id: " + announcementId + " doesn't exists!"));
-    }
-
-    private void checkIfParticipates(Course course, Person person) {
+    private void checkIfParticipates(Long courseId, Person person) {
         try {
-            if (!participationService.checkIfParticipates(course, person)) {
+            if (!participationService.checkIfParticipates(courseId, person)) {
                 throw new ForbiddenException("Access denied!");
             }
         } catch (ServiceException se) {
             throw new InternalServerException("Could not check participation!", se);
+        }
+    }
+
+    private void checkIfHasThisAnnouncement(Long courseId, Long announcementId) {
+        try {
+            if (!announcementService.checkIfExistsByCourseIdAndId(courseId, announcementId)) {
+                throw new BadRequestException(
+                        "Course with id: " + courseId + " has no announcement with id: " + announcementId + "!"
+                );
+            }
+        } catch (ServiceException se) {
+            throw new InternalServerException("Could not check announcement!", se);
         }
     }
 }
