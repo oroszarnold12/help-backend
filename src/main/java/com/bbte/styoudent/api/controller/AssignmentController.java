@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 
+@CrossOrigin
 @Slf4j
 @RestController
 @RequestMapping("/courses/{courseId}/assignments")

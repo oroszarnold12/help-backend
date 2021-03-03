@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import java.time.LocalDateTime;
 
+@CrossOrigin
 @Slf4j
 @RestController
 @RequestMapping("/courses/{courseId}/announcements/{announcementId}/comments")

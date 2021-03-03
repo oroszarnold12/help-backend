@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+@CrossOrigin
 @Slf4j
 @RestController
 @RequestMapping("/courses/{courseId}/assignments/{assignmentId}/submissions")
