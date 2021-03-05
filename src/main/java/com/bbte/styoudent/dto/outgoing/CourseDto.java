@@ -13,5 +13,6 @@ public class CourseDto {
     private List<ThinAssignmentDto> assignments;
     private List<ThinAnnouncementDto> announcements;
     private List<ThinDiscussionDto> discussions;
+    private List<ThinQuizDto> quizzes;
     private ThinPersonDto teacher;
 }
