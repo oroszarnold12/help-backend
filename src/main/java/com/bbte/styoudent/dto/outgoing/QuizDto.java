@@ -13,4 +13,6 @@ public class QuizDto {
     private LocalDateTime dueDate;
     private LocalTime timeLimit;
     private Double points;
+    private Boolean showCorrectAnswers;
+    private Boolean multipleAttempts;
 }

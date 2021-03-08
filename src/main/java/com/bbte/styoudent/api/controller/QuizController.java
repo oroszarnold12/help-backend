@@ -100,6 +100,8 @@ public class QuizController {
             quiz.setDescription(quizCreationDto.getDescription());
             quiz.setDueDate(quizCreationDto.getDueDate());
             quiz.setTimeLimit(quizCreationDto.getTimeLimit());
+            quiz.setShowCorrectAnswers(quizCreationDto.getShowCorrectAnswers());
+            quiz.setMultipleAttempts(quizCreationDto.getMultipleAttempts());
 
             quizService.save(quiz);
 

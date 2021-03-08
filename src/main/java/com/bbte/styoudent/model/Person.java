@@ -52,4 +52,7 @@ public class Person extends BaseEntity {
 
     @OneToMany(mappedBy = "submitter", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Grade> grades;
+
+    @OneToMany(mappedBy = "submitter", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<QuizSubmission> quizSubmissions;
 }

@@ -20,4 +20,8 @@ public class QuizCreationDto {
     private LocalDateTime dueDate;
     @NotNull
     private LocalTime timeLimit;
+    @NotNull
+    private Boolean showCorrectAnswers;
+    @NotNull
+    private Boolean multipleAttempts;
 }

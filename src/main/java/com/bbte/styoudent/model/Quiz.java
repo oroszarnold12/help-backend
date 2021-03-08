@@ -21,8 +21,12 @@ public class Quiz extends BaseEntity {
     private LocalDateTime dueDate;
     private LocalTime timeLimit;
     private Double points;
+    private Boolean showCorrectAnswers;
+    private Boolean multipleAttempts;
     @OneToMany(mappedBy = "quiz", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Question> questions;
+    @OneToMany(mappedBy = "quiz", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<QuizSubmission> submissions;
     @ManyToOne
     private Course course;
 }
