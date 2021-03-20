@@ -2,13 +2,17 @@ package com.bbte.styoudent.api.controller;
 
 import com.bbte.styoudent.api.assembler.QuizSubmissionAssembler;
 import com.bbte.styoudent.api.exception.BadRequestException;
-import com.bbte.styoudent.api.exception.ForbiddenException;
 import com.bbte.styoudent.api.exception.InternalServerException;
+import com.bbte.styoudent.api.util.ParticipationUtil;
+import com.bbte.styoudent.api.util.QuizUtil;
 import com.bbte.styoudent.dto.incoming.QuizSubmissionCreationDto;
 import com.bbte.styoudent.dto.outgoing.QuizSubmissionDto;
 import com.bbte.styoudent.model.*;
 import com.bbte.styoudent.security.util.AuthUtil;
-import com.bbte.styoudent.service.*;
+import com.bbte.styoudent.service.PersonService;
+import com.bbte.styoudent.service.QuizService;
+import com.bbte.styoudent.service.QuizSubmissionService;
+import com.bbte.styoudent.service.ServiceException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -27,19 +31,21 @@ import java.util.stream.Collectors;
 public class QuizSubmissionController {
     private final PersonService personService;
     private final QuizService quizService;
-    private final ParticipationService participationService;
     private final QuizSubmissionService quizSubmissionService;
     private final QuizSubmissionAssembler quizSubmissionAssembler;
+    private final ParticipationUtil participationUtil;
+    private final QuizUtil quizUtil;
 
     public QuizSubmissionController(PersonService personService, QuizService quizService,
-                                    ParticipationService participationService,
                                     QuizSubmissionService quizSubmissionService,
-                                    QuizSubmissionAssembler quizSubmissionAssembler) {
+                                    QuizSubmissionAssembler quizSubmissionAssembler,
+                                    ParticipationUtil participationUtil, QuizUtil quizUtil) {
         this.personService = personService;
         this.quizService = quizService;
-        this.participationService = participationService;
         this.quizSubmissionService = quizSubmissionService;
         this.quizSubmissionAssembler = quizSubmissionAssembler;
+        this.participationUtil = participationUtil;
+        this.quizUtil = quizUtil;
     }
 
     @GetMapping
@@ -51,8 +57,8 @@ public class QuizSubmissionController {
         log.debug("GET /courses/{}/quizzes/{}/submissions", courseId, quizId);
 
         Person person = personService.getPersonByEmail(AuthUtil.getCurrentUsername());
-        checkIfParticipates(courseId, person);
-        checkIfHasThisQuiz(courseId, quizId);
+        participationUtil.checkIfParticipates(courseId, person);
+        quizUtil.checkIfHasThisQuiz(courseId, quizId);
 
         try {
             Quiz quiz = quizService.getByCourseIdAndId(courseId, quizId);
@@ -85,12 +91,12 @@ public class QuizSubmissionController {
         log.debug("POST /courses/{}/quizzes/{}/submissions", courseId, quizId);
 
         Person person = personService.getPersonByEmail(AuthUtil.getCurrentUsername());
-        checkIfParticipates(courseId, person);
+        participationUtil.checkIfParticipates(courseId, person);
 
         try {
             Quiz quiz = quizService.getByCourseIdAndId(courseId, quizId);
             if (!quiz.getMultipleAttempts()) {
-                checkIfAlreadySubmitted(quizId, person.getId());
+                quizUtil.checkIfAlreadySubmitted(quizId, person.getId());
             }
 
             QuizSubmission quizSubmission = new QuizSubmission();
@@ -101,62 +107,20 @@ public class QuizSubmissionController {
             quizSubmissionCreationDtos.forEach((quizSubmissionCreationDto -> {
                 AnswerSubmission answerSubmission = new AnswerSubmission();
                 answerSubmission.setPicked(quizSubmissionCreationDto.getPicked());
-                answerSubmission.setAnswer(getAnswer(quiz, quizSubmissionCreationDto.getAnswerId()));
+                answerSubmission.setAnswer(quizUtil.getAnswer(quiz, quizSubmissionCreationDto.getAnswerId()));
                 answerSubmission.setQuizSubmission(quizSubmission);
                 answerSubmissions.add(answerSubmission);
             }));
 
-            quizSubmission.setAnswers(answerSubmissions);
+            quizSubmission.setAnswerSubmissions(answerSubmissions);
+
+            quizUtil.gradeQuiz(quiz, quizSubmission, person);
 
             return ResponseEntity.ok(
                     quizSubmissionAssembler.modelToDto(quizSubmissionService.save(quizSubmission))
             );
         } catch (ServiceException se) {
             throw new BadRequestException("Could not POST quiz submission!", se);
-        }
-    }
-
-    private void checkIfParticipates(Long courseId, Person person) {
-        try {
-            if (!participationService.checkIfParticipates(courseId, person)) {
-                throw new ForbiddenException("Access denied!");
-            }
-        } catch (ServiceException se) {
-            throw new InternalServerException("Could not check participation!", se);
-        }
-    }
-
-    private void checkIfAlreadySubmitted(Long quizId, Long submitterId) {
-        try {
-            if (quizSubmissionService.checkIfExistsByQuizIdAndSubmitterId(quizId, submitterId)) {
-                throw new BadRequestException("You have already submitted this quiz!");
-            }
-        } catch (ServiceException se) {
-            throw new InternalServerException("Could not check quiz submission!", se);
-        }
-    }
-
-    private Answer getAnswer(Quiz quiz, Long answerId) {
-        List<Answer> answers = new ArrayList<>();
-        quiz.getQuestions().forEach(question -> {
-            answers.addAll(question.getAnswers());
-        });
-
-        return answers.stream().filter(answer -> answer.getId().equals(answerId)).findFirst().orElseThrow(() ->
-                new BadRequestException(
-                        "Quiz with id: " + quiz.getId() + " has no answer with id: " + answerId
-                ));
-    }
-
-    private void checkIfHasThisQuiz(Long courseId, Long quizId) {
-        try {
-            if (!quizService.checkIfExistsByCourseIdAndId(courseId, quizId)) {
-                throw new BadRequestException(
-                        "Course with id: " + courseId + " has no quiz with id: " + quizId + "!"
-                );
-            }
-        } catch (ServiceException se) {
-            throw new InternalServerException("Could not check quiz!", se);
         }
     }
 }

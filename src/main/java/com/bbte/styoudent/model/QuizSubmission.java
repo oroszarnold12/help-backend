@@ -14,7 +14,7 @@ import java.util.Collection;
 @EqualsAndHashCode(callSuper = true)
 public class QuizSubmission extends BaseEntity {
     @OneToMany(mappedBy = "quizSubmission", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Collection<AnswerSubmission> answers;
+    private Collection<AnswerSubmission> answerSubmissions;
     @ManyToOne
     private Quiz quiz;
     @ManyToOne

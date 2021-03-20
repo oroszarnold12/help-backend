@@ -3,8 +3,8 @@ package com.bbte.styoudent.dto.outgoing;
 import lombok.Data;
 
 @Data
-public class GradeDto {
+public class QuizGradeDto {
     private Double grade;
     private ThinPersonDto submitter;
-    private ThinAssignmentDto assignment;
+    private ThinQuizDto quiz;
 }

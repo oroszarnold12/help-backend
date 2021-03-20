@@ -2,9 +2,9 @@ package com.bbte.styoudent.api.controller;
 
 import com.bbte.styoudent.api.assembler.AssignmentAssembler;
 import com.bbte.styoudent.api.exception.BadRequestException;
-import com.bbte.styoudent.api.exception.ForbiddenException;
-import com.bbte.styoudent.api.exception.InternalServerException;
 import com.bbte.styoudent.api.exception.NotFoundException;
+import com.bbte.styoudent.api.util.AssignmentUtil;
+import com.bbte.styoudent.api.util.ParticipationUtil;
 import com.bbte.styoudent.dto.incoming.AssignmentCreationDto;
 import com.bbte.styoudent.dto.outgoing.AssignmentDto;
 import com.bbte.styoudent.model.Assignment;
@@ -27,17 +27,20 @@ public class AssignmentController {
     private final CourseService courseService;
     private final PersonService personService;
     private final AssignmentAssembler assignmentAssembler;
-    private final ParticipationService participationService;
     private final AssignmentService assignmentService;
+    private final ParticipationUtil participationUtil;
+    private final AssignmentUtil assignmentUtil;
 
     public AssignmentController(CourseService courseService, PersonService personService,
-                                AssignmentAssembler assignmentAssembler, ParticipationService participationService,
-                                AssignmentService assignmentService) {
+                                AssignmentAssembler assignmentAssembler,
+                                AssignmentService assignmentService, ParticipationUtil participationUtil,
+                                AssignmentUtil assignmentUtil) {
         this.courseService = courseService;
         this.personService = personService;
         this.assignmentAssembler = assignmentAssembler;
-        this.participationService = participationService;
         this.assignmentService = assignmentService;
+        this.participationUtil = participationUtil;
+        this.assignmentUtil = assignmentUtil;
     }
 
     @GetMapping(value = "{assignmentId}")
@@ -47,7 +50,7 @@ public class AssignmentController {
         log.debug("GET /courses/{}/assignments/{}", courseId, assignmentId);
 
         Person person = personService.getPersonByEmail(AuthUtil.getCurrentUsername());
-        checkIfParticipates(courseId, person);
+        participationUtil.checkIfParticipates(courseId, person);
 
         try {
             Assignment assignment = assignmentService.getByCourseIdAndId(courseId, assignmentId);
@@ -66,7 +69,7 @@ public class AssignmentController {
         log.debug("POST /courses/{}/assignments {}", courseId, assignmentCreationDto);
 
         Person person = personService.getPersonByEmail(AuthUtil.getCurrentUsername());
-        checkIfParticipates(courseId, person);
+        participationUtil.checkIfParticipates(courseId, person);
 
         try {
             Course course = courseService.getById(courseId);
@@ -91,7 +94,7 @@ public class AssignmentController {
         log.debug("PUT /courses/{}/assignments/ {}", courseId, assignmentCreationDto);
 
         Person person = personService.getPersonByEmail(AuthUtil.getCurrentUsername());
-        checkIfParticipates(courseId, person);
+        participationUtil.checkIfParticipates(courseId, person);
 
         try {
             Assignment assignment = assignmentService.getByCourseIdAndId(courseId, assignmentId);
@@ -116,8 +119,8 @@ public class AssignmentController {
         log.debug("DELETE /courses/{}/assignments/{}", courseId, assignmentId);
 
         Person person = personService.getPersonByEmail(AuthUtil.getCurrentUsername());
-        checkIfParticipates(courseId, person);
-        checkIfHasThisAssignment(courseId, assignmentId);
+        participationUtil.checkIfParticipates(courseId, person);
+        assignmentUtil.checkIfHasThisAssignment(courseId, assignmentId);
 
         try {
             assignmentService.delete(assignmentId);
@@ -125,28 +128,6 @@ public class AssignmentController {
             return ResponseEntity.noContent().build();
         } catch (ServiceException se) {
             throw new BadRequestException("Could not DELETE assignment!", se);
-        }
-    }
-
-    private void checkIfParticipates(Long courseId, Person person) {
-        try {
-            if (!participationService.checkIfParticipates(courseId, person)) {
-                throw new ForbiddenException("Access denied!");
-            }
-        } catch (ServiceException se) {
-            throw new InternalServerException("Could not check participation!", se);
-        }
-    }
-
-    private void checkIfHasThisAssignment(Long courseId, Long assignmentId) {
-        try {
-            if (!assignmentService.checkIfExistsByCourseIdAndId(courseId, assignmentId)) {
-                throw new BadRequestException(
-                        "Course with id: " + courseId + " has no assignment with id: " + assignmentId + "!"
-                );
-            }
-        } catch (ServiceException se) {
-            throw new InternalServerException("Could not check assignment!", se);
         }
     }
 }

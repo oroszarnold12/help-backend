@@ -29,4 +29,6 @@ public class Quiz extends BaseEntity {
     private List<QuizSubmission> submissions;
     @ManyToOne
     private Course course;
+    @OneToMany(mappedBy = "quiz", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<QuizGrade> quizGrades;
 }

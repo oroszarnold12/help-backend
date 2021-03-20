@@ -3,8 +3,9 @@ package com.bbte.styoudent.api.controller;
 import com.bbte.styoudent.api.assembler.DiscussionAssembler;
 import com.bbte.styoudent.api.exception.BadRequestException;
 import com.bbte.styoudent.api.exception.ForbiddenException;
-import com.bbte.styoudent.api.exception.InternalServerException;
 import com.bbte.styoudent.api.exception.NotFoundException;
+import com.bbte.styoudent.api.util.DiscussionUtil;
+import com.bbte.styoudent.api.util.ParticipationUtil;
 import com.bbte.styoudent.dto.incoming.DiscussionCreationDto;
 import com.bbte.styoudent.dto.outgoing.DiscussionDto;
 import com.bbte.styoudent.model.Course;
@@ -29,17 +30,20 @@ public class DiscussionController {
     private final CourseService courseService;
     private final PersonService personService;
     private final DiscussionAssembler discussionAssembler;
-    private final ParticipationService participationService;
     private final DiscussionService discussionService;
+    private final DiscussionUtil discussionUtil;
+    private final ParticipationUtil participationUtil;
 
     public DiscussionController(CourseService courseService, PersonService personService,
-                                DiscussionAssembler discussionAssembler, ParticipationService participationService,
-                                DiscussionService discussionService) {
+                                DiscussionAssembler discussionAssembler,
+                                DiscussionService discussionService, DiscussionUtil discussionUtil,
+                                ParticipationUtil participationUtil) {
         this.courseService = courseService;
         this.personService = personService;
         this.discussionAssembler = discussionAssembler;
-        this.participationService = participationService;
         this.discussionService = discussionService;
+        this.discussionUtil = discussionUtil;
+        this.participationUtil = participationUtil;
     }
 
     @GetMapping(value = "{discussionId}")
@@ -49,7 +53,7 @@ public class DiscussionController {
         log.debug("GET /courses/{}/discussions/{}", courseId, discussionId);
 
         Person person = personService.getPersonByEmail(AuthUtil.getCurrentUsername());
-        checkIfParticipates(courseId, person);
+        participationUtil.checkIfParticipates(courseId, person);
 
         try {
             Discussion discussion = discussionService.getByCourseIdAndId(courseId, discussionId);
@@ -68,7 +72,7 @@ public class DiscussionController {
         log.debug("POST /courses/{}/discussions {}", courseId, discussionCreationDto);
 
         Person person = personService.getPersonByEmail(AuthUtil.getCurrentUsername());
-        checkIfParticipates(courseId, person);
+        participationUtil.checkIfParticipates(courseId, person);
 
         try {
             Course course = courseService.getById(courseId);
@@ -121,7 +125,7 @@ public class DiscussionController {
         log.debug("DELETE /courses/{}/discussions/{}", courseId, discussionId);
 
         Person person = personService.getPersonByEmail(AuthUtil.getCurrentUsername());
-        checkIfHasThisDiscussion(courseId, discussionId);
+        discussionUtil.checkIfHasThisDiscussion(courseId, discussionId);
 
         try {
             Discussion discussion = discussionService.getByCourseIdAndId(courseId, discussionId);
@@ -135,28 +139,6 @@ public class DiscussionController {
             return ResponseEntity.noContent().build();
         } catch (ServiceException se) {
             throw new BadRequestException("Could not DELETE discussion!", se);
-        }
-    }
-
-    private void checkIfParticipates(Long courseId, Person person) {
-        try {
-            if (!participationService.checkIfParticipates(courseId, person)) {
-                throw new ForbiddenException("Access denied!");
-            }
-        } catch (ServiceException se) {
-            throw new InternalServerException("Could not check participation!", se);
-        }
-    }
-
-    private void checkIfHasThisDiscussion(Long courseId, Long discussionId) {
-        try {
-            if (!discussionService.checkIfExistsByCourseIdAndId(courseId, discussionId)) {
-                throw new BadRequestException(
-                        "Course with id: " + courseId + " has no discussion with id: " + discussionId + "!"
-                );
-            }
-        } catch (ServiceException se) {
-            throw new InternalServerException("Could not check discussion!", se);
         }
     }
 }

@@ -1,9 +1,10 @@
 package com.bbte.styoudent.api.controller;
 
 import com.bbte.styoudent.api.assembler.SubmissionAssembler;
-import com.bbte.styoudent.api.exception.BadRequestException;
 import com.bbte.styoudent.api.exception.ForbiddenException;
 import com.bbte.styoudent.api.exception.InternalServerException;
+import com.bbte.styoudent.api.util.AssignmentUtil;
+import com.bbte.styoudent.api.util.ParticipationUtil;
 import com.bbte.styoudent.dto.outgoing.SubmissionDto;
 import com.bbte.styoudent.model.Assignment;
 import com.bbte.styoudent.model.Person;
@@ -34,23 +35,25 @@ import java.util.stream.Collectors;
 public class SubmissionController {
     private final FileStorageService fileStorageService;
     private final PersonService personService;
-    private final ParticipationService participationService;
     private final SubmissionAssembler submissionAssembler;
     private final AssignmentService assignmentService;
     private final SubmissionService submissionService;
-    private final GradeService gradeService;
+    private final AssignmentGradeService assignmentGradeService;
+    private final ParticipationUtil participationUtil;
+    private final AssignmentUtil assignmentUtil;
 
     public SubmissionController(FileStorageService fileStorageService, PersonService personService,
-                                ParticipationService participationService,
                                 SubmissionAssembler submissionAssembler, AssignmentService assignmentService,
-                                SubmissionService submissionService, GradeService gradeService) {
+                                SubmissionService submissionService, AssignmentGradeService assignmentGradeService,
+                                ParticipationUtil participationUtil, AssignmentUtil assignmentUtil) {
         this.fileStorageService = fileStorageService;
         this.personService = personService;
-        this.participationService = participationService;
         this.submissionAssembler = submissionAssembler;
         this.assignmentService = assignmentService;
         this.submissionService = submissionService;
-        this.gradeService = gradeService;
+        this.assignmentGradeService = assignmentGradeService;
+        this.participationUtil = participationUtil;
+        this.assignmentUtil = assignmentUtil;
     }
 
     @GetMapping()
@@ -62,8 +65,8 @@ public class SubmissionController {
         log.debug("GET /courses/{}/assignments/{}/submissions", courseId, assignmentId);
 
         Person person = personService.getPersonByEmail(AuthUtil.getCurrentUsername());
-        checkIfParticipates(courseId, person);
-        checkIfHasThisAssignment(courseId, assignmentId);
+        participationUtil.checkIfParticipates(courseId, person);
+        assignmentUtil.checkIfHasThisAssignment(courseId, assignmentId);
 
         try {
             if (person.getRole().equals(Role.ROLE_STUDENT)) {
@@ -90,8 +93,8 @@ public class SubmissionController {
         log.debug("GET /courses/{}/assignments/{}/submissions/{}", courseId, assignmentId, submissionId);
 
         Person person = personService.getPersonByEmail(AuthUtil.getCurrentUsername());
-        checkIfParticipates(courseId, person);
-        checkIfHasThisAssignment(courseId, assignmentId);
+        participationUtil.checkIfParticipates(courseId, person);
+        assignmentUtil.checkIfHasThisAssignment(courseId, assignmentId);
 
         try {
             Submission submission = submissionService.getByAssignmentIdAndId(assignmentId, submissionId);
@@ -121,12 +124,12 @@ public class SubmissionController {
         log.debug("POST /courses/{}/assignments/{}/submissions", courseId, assignmentId);
 
         Person person = personService.getPersonByEmail(AuthUtil.getCurrentUsername());
-        checkIfParticipates(courseId, person);
+        participationUtil.checkIfParticipates(courseId, person);
 
         try {
             Assignment assignment = assignmentService.getByCourseIdAndId(courseId, assignmentId);
 
-            gradeService.deleteByAssignmentIdAndSubmitterId(assignment.getId(), person.getId());
+            assignmentGradeService.deleteByAssignmentIdAndSubmitterId(assignment.getId(), person.getId());
 
             String uploadedFileName = fileStorageService.storeFile(file);
 
@@ -142,28 +145,6 @@ public class SubmissionController {
             ));
         } catch (ServiceException se) {
             throw new InternalServerException("Could not POST submission!", se);
-        }
-    }
-
-    private void checkIfParticipates(Long courseId, Person person) {
-        try {
-            if (!participationService.checkIfParticipates(courseId, person)) {
-                throw new ForbiddenException("Access denied!");
-            }
-        } catch (ServiceException se) {
-            throw new InternalServerException("Could not check participation!", se);
-        }
-    }
-
-    private void checkIfHasThisAssignment(Long courseId, Long assignmentId) {
-        try {
-            if (!assignmentService.checkIfExistsByCourseIdAndId(courseId, assignmentId)) {
-                throw new BadRequestException(
-                        "Course with id: " + courseId + " has no assignment with id: " + assignmentId + "!"
-                );
-            }
-        } catch (ServiceException se) {
-            throw new InternalServerException("Could not check assignment!", se);
         }
     }
 }

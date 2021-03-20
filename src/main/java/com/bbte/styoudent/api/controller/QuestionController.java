@@ -2,8 +2,9 @@ package com.bbte.styoudent.api.controller;
 
 import com.bbte.styoudent.api.assembler.QuestionAssembler;
 import com.bbte.styoudent.api.exception.BadRequestException;
-import com.bbte.styoudent.api.exception.ForbiddenException;
 import com.bbte.styoudent.api.exception.InternalServerException;
+import com.bbte.styoudent.api.util.ParticipationUtil;
+import com.bbte.styoudent.api.util.QuizUtil;
 import com.bbte.styoudent.dto.incoming.QuestionCreationDto;
 import com.bbte.styoudent.dto.outgoing.QuestionDto;
 import com.bbte.styoudent.model.Person;
@@ -26,19 +27,21 @@ import java.util.stream.Collectors;
 @RequestMapping("/courses/{courseId}/quizzes/{quizId}/questions")
 public class QuestionController {
     private final PersonService personService;
-    private final ParticipationService participationService;
     private final QuizService quizService;
     private final QuestionAssembler questionAssembler;
     private final QuestionService questionService;
+    private final ParticipationUtil participationUtil;
+    private final QuizUtil quizUtil;
 
-    public QuestionController(PersonService personService, ParticipationService participationService,
+    public QuestionController(PersonService personService,
                               QuizService quizService, QuestionAssembler questionAssembler,
-                              QuestionService questionService) {
+                              QuestionService questionService, ParticipationUtil participationUtil, QuizUtil quizUtil) {
         this.personService = personService;
-        this.participationService = participationService;
         this.quizService = quizService;
         this.questionAssembler = questionAssembler;
         this.questionService = questionService;
+        this.participationUtil = participationUtil;
+        this.quizUtil = quizUtil;
     }
 
     @GetMapping
@@ -50,8 +53,8 @@ public class QuestionController {
         log.debug("GET /courses/{}/quizzes/{}/questions", courseId, quizId);
 
         Person person = personService.getPersonByEmail(AuthUtil.getCurrentUsername());
-        checkIfParticipates(courseId, person);
-        checkIfHasThisQuiz(courseId, quizId);
+        participationUtil.checkIfParticipates(courseId, person);
+        quizUtil.checkIfHasThisQuiz(courseId, quizId);
 
         try {
             return ResponseEntity.ok(
@@ -74,7 +77,7 @@ public class QuestionController {
         log.debug("POST /courses/{}/quizzes/{}/questions", courseId, quizId);
 
         Person person = personService.getPersonByEmail(AuthUtil.getCurrentUsername());
-        checkIfParticipates(courseId, person);
+        participationUtil.checkIfParticipates(courseId, person);
 
         try {
             Quiz quiz = quizService.getByCourseIdAndId(courseId, quizId);
@@ -105,7 +108,7 @@ public class QuestionController {
         log.debug("PUT /courses/{}/quizzes/{}/questions/{}", courseId, quizId, questionId);
 
         Person person = personService.getPersonByEmail(AuthUtil.getCurrentUsername());
-        checkIfParticipates(courseId, person);
+        participationUtil.checkIfParticipates(courseId, person);
 
         try {
             Quiz quiz = quizService.getByCourseIdAndId(courseId, quizId);
@@ -138,7 +141,7 @@ public class QuestionController {
         log.debug("DELETE /courses/{}/quizzes/{}/questions/{}", courseId, quizId, questionId);
 
         Person person = personService.getPersonByEmail(AuthUtil.getCurrentUsername());
-        checkIfParticipates(courseId, person);
+        participationUtil.checkIfParticipates(courseId, person);
 
         try {
             Quiz quiz = quizService.getByCourseIdAndId(courseId, quizId);
@@ -150,28 +153,6 @@ public class QuestionController {
             return ResponseEntity.noContent().build();
         } catch (ServiceException se) {
             throw new BadRequestException("Could not DELETE question!", se);
-        }
-    }
-
-    private void checkIfParticipates(Long courseId, Person person) {
-        try {
-            if (!participationService.checkIfParticipates(courseId, person)) {
-                throw new ForbiddenException("Access denied!");
-            }
-        } catch (ServiceException se) {
-            throw new InternalServerException("Could not check participation!", se);
-        }
-    }
-
-    private void checkIfHasThisQuiz(Long courseId, Long quizId) {
-        try {
-            if (!quizService.checkIfExistsByCourseIdAndId(courseId, quizId)) {
-                throw new BadRequestException(
-                        "Course with id: " + courseId + " has no quiz with id: " + quizId + "!"
-                );
-            }
-        } catch (ServiceException se) {
-            throw new InternalServerException("Could not check quiz!", se);
         }
     }
 }

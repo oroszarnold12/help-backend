@@ -7,5 +7,5 @@ import java.util.Collection;
 @Data
 public class QuizSubmissionDto {
     private ThinPersonDto submitter;
-    private Collection<AnswerSubmissionDto> answers;
+    private Collection<AnswerSubmissionDto> answerSubmissions;
 }

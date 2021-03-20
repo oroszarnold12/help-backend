@@ -2,9 +2,9 @@ package com.bbte.styoudent.api.controller;
 
 import com.bbte.styoudent.api.assembler.AnnouncementAssembler;
 import com.bbte.styoudent.api.exception.BadRequestException;
-import com.bbte.styoudent.api.exception.ForbiddenException;
-import com.bbte.styoudent.api.exception.InternalServerException;
 import com.bbte.styoudent.api.exception.NotFoundException;
+import com.bbte.styoudent.api.util.AnnouncementUtil;
+import com.bbte.styoudent.api.util.ParticipationUtil;
 import com.bbte.styoudent.dto.incoming.AnnouncementCreationDto;
 import com.bbte.styoudent.dto.outgoing.AnnouncementDto;
 import com.bbte.styoudent.model.Announcement;
@@ -28,17 +28,20 @@ public class AnnouncementController {
     private final CourseService courseService;
     private final PersonService personService;
     private final AnnouncementAssembler announcementAssembler;
-    private final ParticipationService participationService;
     private final AnnouncementService announcementService;
+    private final ParticipationUtil participationUtil;
+    private final AnnouncementUtil announcementUtil;
 
     public AnnouncementController(CourseService courseService, PersonService personService,
                                   AnnouncementAssembler announcementAssembler,
-                                  ParticipationService participationService, AnnouncementService announcementService) {
+                                  AnnouncementService announcementService, ParticipationUtil participationUtil,
+                                  AnnouncementUtil announcementUtil) {
         this.courseService = courseService;
         this.personService = personService;
         this.announcementAssembler = announcementAssembler;
-        this.participationService = participationService;
         this.announcementService = announcementService;
+        this.participationUtil = participationUtil;
+        this.announcementUtil = announcementUtil;
     }
 
     @GetMapping(value = "{announcementId}")
@@ -48,7 +51,7 @@ public class AnnouncementController {
         log.debug("GET /courses/{}/announcements/{}", courseId, announcementId);
 
         Person person = personService.getPersonByEmail(AuthUtil.getCurrentUsername());
-        checkIfParticipates(courseId, person);
+        participationUtil.checkIfParticipates(courseId, person);
 
         try {
             Announcement announcement = announcementService.getByCourseIdAndId(courseId, announcementId);
@@ -67,7 +70,7 @@ public class AnnouncementController {
         log.debug("POST /courses/{}/announcements {}", courseId, announcementCreationDto);
 
         Person person = personService.getPersonByEmail(AuthUtil.getCurrentUsername());
-        checkIfParticipates(courseId, person);
+        participationUtil.checkIfParticipates(courseId, person);
 
         try {
             Course course = courseService.getById(courseId);
@@ -94,7 +97,7 @@ public class AnnouncementController {
         log.debug("PUT /courses/{}/announcements {}", courseId, announcementCreationDto);
 
         Person person = personService.getPersonByEmail(AuthUtil.getCurrentUsername());
-        checkIfParticipates(courseId, person);
+        participationUtil.checkIfParticipates(courseId, person);
 
         try {
             Announcement announcement = announcementService.getByCourseIdAndId(courseId, announcementId);
@@ -116,8 +119,8 @@ public class AnnouncementController {
         log.debug("DELETE /courses/{}/announcements/{}", courseId, announcementId);
 
         Person person = personService.getPersonByEmail(AuthUtil.getCurrentUsername());
-        checkIfParticipates(courseId, person);
-        checkIfHasThisAnnouncement(courseId, announcementId);
+        participationUtil.checkIfParticipates(courseId, person);
+        announcementUtil.checkIfHasThisAnnouncement(courseId, announcementId);
 
         try {
            announcementService.delete(announcementId);
@@ -125,28 +128,6 @@ public class AnnouncementController {
             return ResponseEntity.noContent().build();
         } catch (ServiceException se) {
             throw new BadRequestException("Could not DELETE announcement!", se);
-        }
-    }
-
-    private void checkIfParticipates(Long courseId, Person person) {
-        try {
-            if (!participationService.checkIfParticipates(courseId, person)) {
-                throw new ForbiddenException("Access denied!");
-            }
-        } catch (ServiceException se) {
-            throw new InternalServerException("Could not check participation!", se);
-        }
-    }
-
-    private void checkIfHasThisAnnouncement(Long courseId, Long announcementId) {
-        try {
-            if (!announcementService.checkIfExistsByCourseIdAndId(courseId, announcementId)) {
-                throw new BadRequestException(
-                        "Course with id: " + courseId + " has no announcement with id: " + announcementId + "!"
-                );
-            }
-        } catch (ServiceException se) {
-            throw new InternalServerException("Could not check announcement!", se);
         }
     }
 }

@@ -3,7 +3,8 @@ package com.bbte.styoudent.api.controller;
 import com.bbte.styoudent.api.assembler.AnnouncementCommentAssembler;
 import com.bbte.styoudent.api.exception.BadRequestException;
 import com.bbte.styoudent.api.exception.ForbiddenException;
-import com.bbte.styoudent.api.exception.InternalServerException;
+import com.bbte.styoudent.api.util.AnnouncementUtil;
+import com.bbte.styoudent.api.util.ParticipationUtil;
 import com.bbte.styoudent.dto.incoming.AnnouncementCommentCreationDto;
 import com.bbte.styoudent.dto.outgoing.AnnouncementCommentDto;
 import com.bbte.styoudent.model.Announcement;
@@ -26,20 +27,22 @@ import java.time.LocalDateTime;
 public class AnnouncementCommentController {
     private final PersonService personService;
     private final AnnouncementCommentAssembler announcementCommentAssembler;
-    private final ParticipationService participationService;
     private final AnnouncementService announcementService;
     private final AnnouncementCommentService announcementCommentService;
+    private final ParticipationUtil participationUtil;
+    private final AnnouncementUtil announcementUtil;
 
     public AnnouncementCommentController(PersonService personService,
                                          AnnouncementCommentAssembler announcementCommentAssembler,
-                                         ParticipationService participationService,
                                          AnnouncementService announcementService,
-                                         AnnouncementCommentService announcementCommentService) {
+                                         AnnouncementCommentService announcementCommentService,
+                                         ParticipationUtil participationUtil, AnnouncementUtil announcementUtil) {
         this.personService = personService;
         this.announcementCommentAssembler = announcementCommentAssembler;
-        this.participationService = participationService;
         this.announcementService = announcementService;
         this.announcementCommentService = announcementCommentService;
+        this.participationUtil = participationUtil;
+        this.announcementUtil = announcementUtil;
     }
 
     @PostMapping()
@@ -52,7 +55,7 @@ public class AnnouncementCommentController {
                 announcementCommentCreationDto);
 
         Person person = personService.getPersonByEmail(AuthUtil.getCurrentUsername());
-        checkIfParticipates(courseId, person);
+        participationUtil.checkIfParticipates(courseId, person);
 
         try {
             Announcement announcement = announcementService.getByCourseIdAndId(courseId, announcementId);
@@ -83,7 +86,7 @@ public class AnnouncementCommentController {
                 announcementCommentId, announcementCommentCreationDto);
 
         Person person = personService.getPersonByEmail(AuthUtil.getCurrentUsername());
-        checkIfHasThisAnnouncement(courseId, announcementId);
+        announcementUtil.checkIfHasThisAnnouncement(courseId, announcementId);
 
         try {
             AnnouncementComment announcementComment = announcementCommentService.getByAnnouncementIdAndId(
@@ -114,7 +117,7 @@ public class AnnouncementCommentController {
                 announcementCommentId);
 
         Person person = personService.getPersonByEmail(AuthUtil.getCurrentUsername());
-        checkIfHasThisAnnouncement(courseId, announcementId);
+        announcementUtil.checkIfHasThisAnnouncement(courseId, announcementId);
 
         try {
             AnnouncementComment announcementComment = announcementCommentService.getByAnnouncementIdAndId(
@@ -130,28 +133,6 @@ public class AnnouncementCommentController {
             return ResponseEntity.noContent().build();
         } catch (ServiceException se) {
             throw new BadRequestException("Could not DELETE comment!", se);
-        }
-    }
-
-    private void checkIfParticipates(Long courseId, Person person) {
-        try {
-            if (!participationService.checkIfParticipates(courseId, person)) {
-                throw new ForbiddenException("Access denied!");
-            }
-        } catch (ServiceException se) {
-            throw new InternalServerException("Could not check participation!", se);
-        }
-    }
-
-    private void checkIfHasThisAnnouncement(Long courseId, Long announcementId) {
-        try {
-            if (!announcementService.checkIfExistsByCourseIdAndId(courseId, announcementId)) {
-                throw new BadRequestException(
-                        "Course with id: " + courseId + " has no announcement with id: " + announcementId + "!"
-                );
-            }
-        } catch (ServiceException se) {
-            throw new InternalServerException("Could not check announcement!", se);
         }
     }
 }

@@ -10,16 +10,17 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 @Entity
-@Table(name = "grade")
+@Table(name = "quiz_grade")
 @Data
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
-public class Grade extends BaseEntity {
+public class QuizGrade extends BaseEntity {
     @ManyToOne
     @JoinColumn(name = "submitter_id")
     private Person submitter;
     @ManyToOne
-    @JoinColumn(name = "assignment_id")
-    private Assignment assignment;
+    @JoinColumn(name = "quiz_id")
+    private Quiz quiz;
     private Double grade;
 }
+

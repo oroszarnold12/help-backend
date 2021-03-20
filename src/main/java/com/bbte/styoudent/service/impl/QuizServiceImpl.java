@@ -1,11 +1,14 @@
 package com.bbte.styoudent.service.impl;
 
+import com.bbte.styoudent.model.Assignment;
 import com.bbte.styoudent.model.Quiz;
 import com.bbte.styoudent.repository.QuizRepository;
 import com.bbte.styoudent.service.QuizService;
 import com.bbte.styoudent.service.ServiceException;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 public class QuizServiceImpl implements QuizService {
@@ -46,5 +49,14 @@ public class QuizServiceImpl implements QuizService {
     public Quiz getByCourseIdAndId(Long courseId, Long id) {
         return quizRepository.findByCourseIdAndId(courseId, id).orElseThrow(() ->
                 new ServiceException("Quiz selection with id: " + id + " failed!"));
+    }
+
+    @Override
+    public List<Quiz> getByCourseId(Long courseId) {
+        try {
+            return quizRepository.findByCourseId(courseId);
+        } catch (DataAccessException de) {
+            throw new ServiceException("Quiz selection failed!", de);
+        }
     }
 }

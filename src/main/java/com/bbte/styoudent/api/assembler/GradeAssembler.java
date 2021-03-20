@@ -1,7 +1,9 @@
 package com.bbte.styoudent.api.assembler;
 
 import com.bbte.styoudent.dto.outgoing.GradeDto;
-import com.bbte.styoudent.model.Grade;
+import com.bbte.styoudent.dto.outgoing.QuizGradeDto;
+import com.bbte.styoudent.model.AssignmentGrade;
+import com.bbte.styoudent.model.QuizGrade;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 
@@ -13,7 +15,11 @@ public class GradeAssembler {
         this.modelMapper = modelMapper;
     }
 
-    public GradeDto modelToDto(Grade grade) {
-        return this.modelMapper.map(grade, GradeDto.class);
+    public GradeDto modelToDto(AssignmentGrade assignmentGrade) {
+        return this.modelMapper.map(assignmentGrade, GradeDto.class);
+    }
+
+    public QuizGradeDto modelToDto(QuizGrade quizGrade) {
+        return this.modelMapper.map(quizGrade, QuizGradeDto.class);
     }
 }

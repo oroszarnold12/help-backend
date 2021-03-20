@@ -3,8 +3,8 @@ package com.bbte.styoudent.api.controller;
 import com.bbte.styoudent.api.assembler.DiscussionCommentAssembler;
 import com.bbte.styoudent.api.exception.BadRequestException;
 import com.bbte.styoudent.api.exception.ForbiddenException;
-import com.bbte.styoudent.api.exception.InternalServerException;
-import com.bbte.styoudent.api.exception.NotFoundException;
+import com.bbte.styoudent.api.util.DiscussionUtil;
+import com.bbte.styoudent.api.util.ParticipationUtil;
 import com.bbte.styoudent.dto.incoming.DiscussionCommentCreationDto;
 import com.bbte.styoudent.dto.outgoing.DiscussionCommentDto;
 import com.bbte.styoudent.model.*;
@@ -25,19 +25,22 @@ import java.time.LocalDateTime;
 public class DiscussionCommentController {
     private final PersonService personService;
     private final DiscussionCommentAssembler discussionCommentAssembler;
-    private final ParticipationService participationService;
     private final DiscussionService discussionService;
     private final DiscussionCommentService discussionCommentService;
+    private final DiscussionUtil discussionUtil;
+    private final ParticipationUtil participationUtil;
 
     public DiscussionCommentController(PersonService personService,
                                        DiscussionCommentAssembler discussionCommentAssembler,
-                                       ParticipationService participationService, DiscussionService discussionService,
-                                       DiscussionCommentService discussionCommentService) {
+                                       DiscussionService discussionService,
+                                       DiscussionCommentService discussionCommentService, DiscussionUtil discussionUtil,
+                                       ParticipationUtil participationUtil) {
         this.personService = personService;
         this.discussionCommentAssembler = discussionCommentAssembler;
-        this.participationService = participationService;
         this.discussionService = discussionService;
         this.discussionCommentService = discussionCommentService;
+        this.discussionUtil = discussionUtil;
+        this.participationUtil = participationUtil;
     }
 
     @PostMapping()
@@ -50,7 +53,7 @@ public class DiscussionCommentController {
                 discussionCommentCreationDto);
 
         Person person = personService.getPersonByEmail(AuthUtil.getCurrentUsername());
-        checkIfParticipates(courseId, person);
+        participationUtil.checkIfParticipates(courseId, person);
 
         try {
             Discussion discussion = discussionService.getByCourseIdAndId(courseId, discussionId);
@@ -81,7 +84,7 @@ public class DiscussionCommentController {
                 discussionCommentId, discussionCommentCreationDto);
 
         Person person = personService.getPersonByEmail(AuthUtil.getCurrentUsername());
-        checkIfHasThisDiscussion(courseId, discussionId);
+        discussionUtil.checkIfHasThisDiscussion(courseId, discussionId);
 
         try {
             DiscussionComment discussionComment = discussionCommentService.getByDiscussionIdAndId(discussionId,
@@ -111,7 +114,7 @@ public class DiscussionCommentController {
                 discussionCommentId);
 
         Person person = personService.getPersonByEmail(AuthUtil.getCurrentUsername());
-        checkIfHasThisDiscussion(courseId, discussionId);
+        discussionUtil.checkIfHasThisDiscussion(courseId, discussionId);
 
         try {
             DiscussionComment discussionComment = discussionCommentService.getByDiscussionIdAndId(discussionId,
@@ -126,28 +129,6 @@ public class DiscussionCommentController {
             return ResponseEntity.noContent().build();
         } catch (ServiceException se) {
             throw new BadRequestException("Could not DELETE comment!", se);
-        }
-    }
-
-    private void checkIfParticipates(Long courseId, Person person) {
-        try {
-            if (!participationService.checkIfParticipates(courseId, person)) {
-                throw new ForbiddenException("Access denied!");
-            }
-        } catch (ServiceException se) {
-            throw new InternalServerException("Could not check participation!", se);
-        }
-    }
-
-    private void checkIfHasThisDiscussion(Long courseId, Long discussionId) {
-        try {
-            if (!discussionService.checkIfExistsByCourseIdAndId(courseId, discussionId)) {
-                throw new BadRequestException(
-                        "Course with id: " + courseId + " has no discussion with id: " + discussionId + "!"
-                );
-            }
-        } catch (ServiceException se) {
-            throw new InternalServerException("Could not check discussion!", se);
         }
     }
 }
