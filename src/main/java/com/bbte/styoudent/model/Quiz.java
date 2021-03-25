@@ -23,6 +23,7 @@ public class Quiz extends BaseEntity {
     private Double points;
     private Boolean showCorrectAnswers;
     private Boolean multipleAttempts;
+    private Boolean published;
     @OneToMany(mappedBy = "quiz", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Question> questions;
     @OneToMany(mappedBy = "quiz", cascade = CascadeType.ALL, orphanRemoval = true)

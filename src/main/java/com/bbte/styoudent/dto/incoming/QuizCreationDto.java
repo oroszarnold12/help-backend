@@ -24,4 +24,6 @@ public class QuizCreationDto {
     private Boolean showCorrectAnswers;
     @NotNull
     private Boolean multipleAttempts;
+    @NotNull
+    private Boolean published;
 }

@@ -10,4 +10,5 @@ public class ThinQuizDto {
     private String name;
     private LocalDateTime dueDate;
     private Double points;
+    private Boolean published;
 }

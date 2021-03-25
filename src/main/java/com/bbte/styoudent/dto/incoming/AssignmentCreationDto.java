@@ -19,4 +19,6 @@ public class AssignmentCreationDto {
     @NotEmpty
     @Size(max = 16384)
     private String description;
+    @NotNull
+    private Boolean published;
 }

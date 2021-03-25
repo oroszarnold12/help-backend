@@ -10,6 +10,7 @@ import com.bbte.styoudent.dto.outgoing.AssignmentDto;
 import com.bbte.styoudent.model.Assignment;
 import com.bbte.styoudent.model.Course;
 import com.bbte.styoudent.model.Person;
+import com.bbte.styoudent.model.Role;
 import com.bbte.styoudent.security.util.AuthUtil;
 import com.bbte.styoudent.service.*;
 import lombok.extern.slf4j.Slf4j;
@@ -53,11 +54,15 @@ public class AssignmentController {
         participationUtil.checkIfParticipates(courseId, person);
 
         try {
+            if (person.getRole().equals(Role.ROLE_STUDENT)) {
+                assignmentUtil.checkIfPublished(courseId, assignmentId);
+            }
+
             Assignment assignment = assignmentService.getByCourseIdAndId(courseId, assignmentId);
 
             return ResponseEntity.ok(assignmentAssembler.modelToDto(assignment));
         } catch (ServiceException se) {
-            throw new NotFoundException("Assignment with id:  " + courseId + " doesn't exists!", se);
+            throw new NotFoundException("Assignment with id:  " + assignmentId + " doesn't exists!", se);
         }
     }
 
@@ -103,6 +108,7 @@ public class AssignmentController {
             assignment.setDueDate(assignmentCreationDto.getDueDate());
             assignment.setPoints(assignmentCreationDto.getPoints());
             assignment.setDescription(assignmentCreationDto.getDescription());
+            assignment.setPublished(assignmentCreationDto.getPublished());
 
             assignmentService.save(assignment);
 

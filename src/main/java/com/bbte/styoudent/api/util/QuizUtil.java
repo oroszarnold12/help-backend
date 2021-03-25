@@ -2,6 +2,7 @@ package com.bbte.styoudent.api.util;
 
 import com.bbte.styoudent.api.exception.BadRequestException;
 import com.bbte.styoudent.api.exception.InternalServerException;
+import com.bbte.styoudent.api.exception.NotFoundException;
 import com.bbte.styoudent.model.*;
 import com.bbte.styoudent.service.QuizGradeService;
 import com.bbte.styoudent.service.QuizService;
@@ -118,5 +119,17 @@ public class QuizUtil {
         });
 
         return picked.get();
+    }
+
+    public void checkIfPublished(Long courseId, Long quizId) {
+        try {
+            if (!quizService.getByCourseIdAndId(courseId, quizId).getPublished()) {
+                throw new NotFoundException(
+                        "Course with id: " + courseId + " has no quiz with id: " + quizId + "!"
+                );
+            }
+        } catch (ServiceException se) {
+            throw new InternalServerException("Could not check quiz!", se);
+        }
     }
 }

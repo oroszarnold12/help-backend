@@ -14,4 +14,5 @@ public class AssignmentDto {
     private LocalDateTime dueDate;
     private Integer points;
     private String description;
+    private Boolean published;
 }

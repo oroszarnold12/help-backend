@@ -66,10 +66,14 @@ public class SubmissionController {
 
         Person person = personService.getPersonByEmail(AuthUtil.getCurrentUsername());
         participationUtil.checkIfParticipates(courseId, person);
-        assignmentUtil.checkIfHasThisAssignment(courseId, assignmentId);
+        if (person.getRole().equals(Role.ROLE_STUDENT)) {
+            assignmentUtil.checkIfHasThisAssignment(courseId, assignmentId);
+        }
 
         try {
             if (person.getRole().equals(Role.ROLE_STUDENT)) {
+                assignmentUtil.checkIfPublished(courseId, assignmentId);
+
                 return ResponseEntity.ok(submissionService.getByAssignmentIdAndBySubmitter(assignmentId, person)
                         .stream().map(submissionAssembler::modelToDto)
                         .collect(Collectors.toList()));
@@ -125,6 +129,7 @@ public class SubmissionController {
 
         Person person = personService.getPersonByEmail(AuthUtil.getCurrentUsername());
         participationUtil.checkIfParticipates(courseId, person);
+        assignmentUtil.checkIfPublished(courseId, assignmentId);
 
         try {
             Assignment assignment = assignmentService.getByCourseIdAndId(courseId, assignmentId);

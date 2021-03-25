@@ -9,7 +9,6 @@ import javax.persistence.*;
 @Data
 @EqualsAndHashCode(callSuper = false)
 public abstract class BaseEntity extends AbstractModel {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")

@@ -16,23 +16,19 @@ import java.util.List;
 public class Assignment extends BaseEntity {
     @Column(name = "name")
     private String name;
-
     @Column(name = "dueDate")
     private LocalDateTime dueDate;
-
     @Column(name = "points")
     private Integer points;
-
     @Column(name = "description", length = 16384)
     private String description;
-
+    @Column(name = "published")
+    private Boolean published;
     @ManyToOne
     @JoinColumn(name = "course_id")
     private Course course;
-
     @OneToMany(mappedBy = "assignment", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Submission> submissions;
-
     @OneToMany(mappedBy = "assignment", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<AssignmentGrade> assignmentGrades;
 }

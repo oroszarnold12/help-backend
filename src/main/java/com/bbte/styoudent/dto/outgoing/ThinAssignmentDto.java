@@ -10,4 +10,5 @@ public class ThinAssignmentDto {
     private String name;
     private LocalDateTime dueDate;
     private Integer points;
+    private Boolean published;
 }

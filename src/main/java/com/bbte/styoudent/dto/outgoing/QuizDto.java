@@ -15,4 +15,5 @@ public class QuizDto {
     private Double points;
     private Boolean showCorrectAnswers;
     private Boolean multipleAttempts;
+    private Boolean published;
 }

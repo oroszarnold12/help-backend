@@ -64,6 +64,8 @@ public class QuizSubmissionController {
             Quiz quiz = quizService.getByCourseIdAndId(courseId, quizId);
 
             if (person.getRole().equals(Role.ROLE_STUDENT) && !quiz.getShowCorrectAnswers()) {
+                quizUtil.checkIfPublished(courseId, quizId);
+
                 return ResponseEntity.ok(
                         quizSubmissionService.getAllByQuizIdAndSubmitterId(quizId, person.getId())
                                 .stream().map(quizSubmissionAssembler::modelToThinDto)
@@ -92,6 +94,9 @@ public class QuizSubmissionController {
 
         Person person = personService.getPersonByEmail(AuthUtil.getCurrentUsername());
         participationUtil.checkIfParticipates(courseId, person);
+        if (person.getRole().equals(Role.ROLE_STUDENT)) {
+            quizUtil.checkIfPublished(courseId, quizId);
+        }
 
         try {
             Quiz quiz = quizService.getByCourseIdAndId(courseId, quizId);

@@ -10,6 +10,7 @@ import com.bbte.styoudent.dto.outgoing.QuizDto;
 import com.bbte.styoudent.model.Course;
 import com.bbte.styoudent.model.Person;
 import com.bbte.styoudent.model.Quiz;
+import com.bbte.styoudent.model.Role;
 import com.bbte.styoudent.security.util.AuthUtil;
 import com.bbte.styoudent.service.*;
 import lombok.extern.slf4j.Slf4j;
@@ -52,6 +53,10 @@ public class QuizController {
         participationUtil.checkIfParticipates(courseId, person);
 
         try {
+            if (person.getRole().equals(Role.ROLE_STUDENT)) {
+                quizUtil.checkIfPublished(courseId, quizId);
+            }
+
             Quiz quiz = quizService.getByCourseIdAndId(courseId, quizId);
 
             return ResponseEntity.ok(quizAssembler.modelToDto(quiz));
@@ -105,6 +110,7 @@ public class QuizController {
             quiz.setTimeLimit(quizCreationDto.getTimeLimit());
             quiz.setShowCorrectAnswers(quizCreationDto.getShowCorrectAnswers());
             quiz.setMultipleAttempts(quizCreationDto.getMultipleAttempts());
+            quiz.setPublished(quizCreationDto.getPublished());
 
             quizService.save(quiz);
 

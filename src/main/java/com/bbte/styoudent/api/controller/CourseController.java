@@ -9,8 +9,7 @@ import com.bbte.styoudent.dto.incoming.CourseCreationDto;
 import com.bbte.styoudent.dto.outgoing.ApiResponseMessage;
 import com.bbte.styoudent.dto.outgoing.CourseDto;
 import com.bbte.styoudent.dto.outgoing.ThinCourseDto;
-import com.bbte.styoudent.model.Course;
-import com.bbte.styoudent.model.Person;
+import com.bbte.styoudent.model.*;
 import com.bbte.styoudent.security.util.AuthUtil;
 import com.bbte.styoudent.service.CourseService;
 import com.bbte.styoudent.service.ParticipationService;
@@ -73,6 +72,15 @@ public class CourseController {
 
         try {
             Course course = courseService.getCourseByPerson(person, id);
+
+            if (person.getRole().equals(Role.ROLE_STUDENT)) {
+                course.setAssignments(course.getAssignments().stream().filter(Assignment::getPublished)
+                        .collect(Collectors.toList()));
+
+                course.setQuizzes(course.getQuizzes().stream().filter(Quiz::getPublished)
+                        .collect(Collectors.toList()));
+            }
+
             return ResponseEntity.ok(
                     courseAssembler.modelToDto(course)
             );
