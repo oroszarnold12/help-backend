@@ -5,7 +5,7 @@ import com.bbte.styoudent.api.exception.InternalServerException;
 import com.bbte.styoudent.api.util.AssignmentUtil;
 import com.bbte.styoudent.api.util.ParticipationUtil;
 import com.bbte.styoudent.dto.incoming.GradeCreationDto;
-import com.bbte.styoudent.dto.outgoing.GradeDto;
+import com.bbte.styoudent.dto.outgoing.AssignmentGradeDto;
 import com.bbte.styoudent.model.Assignment;
 import com.bbte.styoudent.model.AssignmentGrade;
 import com.bbte.styoudent.model.Person;
@@ -47,7 +47,7 @@ public class AssignmentGradeController {
 
     @GetMapping()
     @PreAuthorize("hasRole('STUDENT') or hasRole('TEACHER')")
-    public ResponseEntity<List<GradeDto>> getGrades(
+    public ResponseEntity<List<AssignmentGradeDto>> getGrades(
             @PathVariable(name = "courseId") Long courseId,
             @PathVariable(name = "assignmentId") Long assignmentId
     ) {
@@ -74,7 +74,7 @@ public class AssignmentGradeController {
 
     @PostMapping()
     @PreAuthorize("hasRole('TEACHER')")
-    public ResponseEntity<GradeDto> getGrades(
+    public ResponseEntity<AssignmentGradeDto> getGrades(
             @PathVariable(name = "courseId") Long courseId,
             @PathVariable(name = "assignmentId") Long assignmentId,
             @RequestBody @Valid GradeCreationDto gradeCreationDto

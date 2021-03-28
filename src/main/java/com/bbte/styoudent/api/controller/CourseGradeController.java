@@ -2,7 +2,7 @@ package com.bbte.styoudent.api.controller;
 
 import com.bbte.styoudent.api.assembler.GradeAssembler;
 import com.bbte.styoudent.api.exception.InternalServerException;
-import com.bbte.styoudent.dto.outgoing.GradeDto;
+import com.bbte.styoudent.dto.outgoing.AssignmentGradeDto;
 import com.bbte.styoudent.dto.outgoing.QuizGradeDto;
 import com.bbte.styoudent.model.Person;
 import com.bbte.styoudent.security.util.AuthUtil;
@@ -42,7 +42,7 @@ public class CourseGradeController {
         Person person = personService.getPersonByEmail(AuthUtil.getCurrentUsername());
 
         try {
-            List<GradeDto> assignmentGrades = new ArrayList<>();
+            List<AssignmentGradeDto> assignmentGrades = new ArrayList<>();
 
             assignmentService.getByCourseId(courseId).forEach(assignment -> assignment.getAssignmentGrades().forEach(
                     grade -> {

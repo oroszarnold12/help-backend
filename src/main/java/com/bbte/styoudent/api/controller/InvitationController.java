@@ -4,6 +4,7 @@ import com.bbte.styoudent.api.assembler.InvitationAssembler;
 import com.bbte.styoudent.api.exception.BadRequestException;
 import com.bbte.styoudent.api.exception.ForbiddenException;
 import com.bbte.styoudent.api.exception.InternalServerException;
+import com.bbte.styoudent.api.util.ParticipationUtil;
 import com.bbte.styoudent.dto.incoming.InvitationCreationDto;
 import com.bbte.styoudent.dto.outgoing.ApiResponseMessage;
 import com.bbte.styoudent.model.Course;
@@ -30,15 +31,17 @@ public class InvitationController {
     private final PersonService personService;
     private final ParticipationService participationService;
     private final InvitationAssembler invitationAssembler;
+    private final ParticipationUtil participationUtil;
 
     public InvitationController(CourseService courseService, InvitationService invitationService,
                                 PersonService personService, ParticipationService participationService,
-                                InvitationAssembler invitationAssembler) {
+                                InvitationAssembler invitationAssembler, ParticipationUtil participationUtil) {
         this.courseService = courseService;
         this.invitationService = invitationService;
         this.personService = personService;
         this.participationService = participationService;
         this.invitationAssembler = invitationAssembler;
+        this.participationUtil = participationUtil;
     }
 
     @GetMapping
@@ -75,13 +78,7 @@ public class InvitationController {
             );
         }
 
-        try {
-            if (!participationService.checkIfParticipates(course, user)) {
-                throw new ForbiddenException("Access denied!");
-            }
-        } catch (ServiceException se) {
-            throw new InternalServerException("Could not check participation!", se);
-        }
+        participationUtil.checkIfParticipates(course.getId(), user);
 
         List<Person> persons = new ArrayList<>();
 

@@ -1,6 +1,6 @@
 package com.bbte.styoudent.api.assembler;
 
-import com.bbte.styoudent.dto.outgoing.GradeDto;
+import com.bbte.styoudent.dto.outgoing.AssignmentGradeDto;
 import com.bbte.styoudent.dto.outgoing.QuizGradeDto;
 import com.bbte.styoudent.model.AssignmentGrade;
 import com.bbte.styoudent.model.QuizGrade;
@@ -15,8 +15,8 @@ public class GradeAssembler {
         this.modelMapper = modelMapper;
     }
 
-    public GradeDto modelToDto(AssignmentGrade assignmentGrade) {
-        return this.modelMapper.map(assignmentGrade, GradeDto.class);
+    public AssignmentGradeDto modelToDto(AssignmentGrade assignmentGrade) {
+        return this.modelMapper.map(assignmentGrade, AssignmentGradeDto.class);
     }
 
     public QuizGradeDto modelToDto(QuizGrade quizGrade) {

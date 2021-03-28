@@ -49,4 +49,16 @@ public class AssignmentUtil {
             throw new InternalServerException("Could not check assignment!", se);
         }
     }
+
+    public void checkIfHasThisGrade(Long assignmentId, Long gradeId) {
+        try {
+            if (!assignmentGradeService.checkIfExistsByAssignmentIdAndId(assignmentId, gradeId)) {
+                throw new NotFoundException(
+                        "Assingment with id:" + assignmentId + " has no grade with id: " + gradeId + "!"
+                );
+            }
+        }catch (ServiceException se) {
+            throw new InternalServerException("Could not check assignment grade!", se);
+        }
+    }
 }

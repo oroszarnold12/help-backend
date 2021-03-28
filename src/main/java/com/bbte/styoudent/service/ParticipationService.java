@@ -8,7 +8,5 @@ public interface ParticipationService {
 
     void deleteParticipationsByCourse(Course course);
 
-    boolean checkIfParticipates(Course course, Person person);
-
     boolean checkIfParticipates(Long courseId, Person person);
 }

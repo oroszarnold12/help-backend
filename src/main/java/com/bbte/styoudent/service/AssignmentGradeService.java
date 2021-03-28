@@ -14,5 +14,9 @@ public interface AssignmentGradeService {
 
     boolean checkIfExistsByAssignmentIdAndSubmitter(Long assignmentId, Person submitter);
 
+    boolean checkIfExistsByAssignmentIdAndId(Long assignmentId, Long id);
+
     void deleteByAssignmentIdAndSubmitterId(Long assignmentId, Long submitterId);
+
+    AssignmentGrade getByAssignmentIdAndId(Long assignmentId, Long id);
 }

@@ -35,15 +35,6 @@ public class ParticipationServiceImpl implements ParticipationService {
     }
 
     @Override
-    public boolean checkIfParticipates(Course course, Person person) {
-        try {
-            return participationRepository.existsByCourseAndPerson(course, person);
-        } catch (DataAccessException de) {
-            throw new ServiceException("Participation checking failed!", de);
-        }
-    }
-
-    @Override
     public boolean checkIfParticipates(Long courseId, Person person) {
         try {
             return participationRepository.existsByCourseIdAndPerson(courseId, person);

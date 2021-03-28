@@ -4,10 +4,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
-import javax.persistence.Entity;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
+import javax.persistence.*;
+import java.util.List;
 
 @Entity
 @Table(name = "assignment_grade")
@@ -22,4 +20,6 @@ public class AssignmentGrade extends BaseEntity {
     @JoinColumn(name = "assignment_id")
     private Assignment assignment;
     private Double grade;
+    @OneToMany(mappedBy = "assignmentGrade", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<AssignmentGradeComment> assignmentGradeComments;
 }

@@ -1,5 +1,6 @@
 package com.bbte.styoudent.service.impl;
 
+import com.bbte.styoudent.model.Course;
 import com.bbte.styoudent.model.Person;
 import com.bbte.styoudent.repository.PersonRepository;
 import com.bbte.styoudent.service.PersonService;
@@ -73,5 +74,14 @@ public class PersonServiceImpl implements PersonService {
     public Person getPersonById(Long id) {
         return personRepository.findById(id).orElseThrow(() ->
                 new ServiceException("Person with id:" + id + " not found!"));
+    }
+
+    @Override
+    public List<Person> getByCoursesContains(Course course) {
+        try {
+            return personRepository.findByCoursesContains(course);
+        } catch (DataAccessException de) {
+            throw new ServiceException("Person selection failed!", de);
+        }
     }
 }

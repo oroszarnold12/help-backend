@@ -1,5 +1,6 @@
 package com.bbte.styoudent.service;
 
+import com.bbte.styoudent.model.Course;
 import com.bbte.styoudent.model.Person;
 
 import java.util.List;
@@ -18,4 +19,6 @@ public interface PersonService {
     void delete(Long id);
 
     Person getPersonById(Long id);
+
+    List<Person> getByCoursesContains(Course course);
 }
