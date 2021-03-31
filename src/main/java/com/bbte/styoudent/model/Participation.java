@@ -15,8 +15,8 @@ public class Participation extends BaseEntity {
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "course_id")
     private Course course;
-
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "person_id")
     private Person person;
+    private Boolean showOnDashboard;
 }
