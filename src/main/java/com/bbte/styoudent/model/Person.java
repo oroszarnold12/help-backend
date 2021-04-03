@@ -3,9 +3,14 @@ package com.bbte.styoudent.model;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
+import org.hibernate.annotations.Type;
+import org.hibernate.type.ImageType;
 
 import javax.persistence.*;
+import java.awt.*;
 import java.util.List;
+
+import static javax.persistence.FetchType.LAZY;
 
 @Entity
 @Table(name = "person")
@@ -24,6 +29,8 @@ public class Person extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false)
     private Role role;
+    @OneToOne(cascade = CascadeType.ALL, fetch = LAZY)
+    private PersonImage personImage;
     @OneToMany(mappedBy = "teacher", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Course> courses;
     @OneToMany(mappedBy = "person", cascade = CascadeType.ALL, orphanRemoval = true)

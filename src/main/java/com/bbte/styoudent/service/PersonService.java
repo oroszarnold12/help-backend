@@ -21,4 +21,6 @@ public interface PersonService {
     Person getPersonById(Long id);
 
     List<Person> getByCoursesContains(Course course);
+
+    Person changePassword(Person person, String password);
 }

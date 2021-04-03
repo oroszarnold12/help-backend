@@ -8,6 +8,7 @@ import com.bbte.styoudent.service.ServiceException;
 import org.springframework.dao.DataAccessException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -38,7 +39,7 @@ public class PersonServiceImpl implements PersonService {
     }
 
     @Override
-    public Person registerNewPerson(Person person) throws ServiceException {
+    public Person registerNewPerson(Person person) {
         person.setPassword(passwordEncoder.encode(person.getPassword()));
         return savePerson(person);
     }
@@ -82,6 +83,17 @@ public class PersonServiceImpl implements PersonService {
             return personRepository.findByCoursesContains(course);
         } catch (DataAccessException de) {
             throw new ServiceException("Person selection failed!", de);
+        }
+    }
+
+    @Override
+    public Person changePassword(Person person, String password) {
+        person.setPassword(passwordEncoder.encode(password));
+
+        try {
+            return personRepository.save(person);
+        } catch (DataAccessException de) {
+            throw new ServiceException("Person updating failed!", de);
         }
     }
 }
