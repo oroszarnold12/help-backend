@@ -12,11 +12,5 @@ public interface AssignmentGradeRepository extends JpaRepository<AssignmentGrade
 
     List<AssignmentGrade> findByAssignmentId(Long assignmentId);
 
-    Optional<AssignmentGrade> findByAssignmentIdAndId(Long assignmentId, Long id);
-
     boolean existsByAssignmentIdAndSubmitter(Long assignmentId, Person submitter);
-
-    boolean existsByAssignmentIdAndId(Long assignmentId, Long id);
-
-    void deleteByAssignmentIdAndSubmitterId(Long assignmentId, Long submitterId);
 }

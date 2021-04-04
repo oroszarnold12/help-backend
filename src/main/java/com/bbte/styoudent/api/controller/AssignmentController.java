@@ -12,13 +12,17 @@ import com.bbte.styoudent.model.Course;
 import com.bbte.styoudent.model.Person;
 import com.bbte.styoudent.model.Role;
 import com.bbte.styoudent.security.util.AuthUtil;
-import com.bbte.styoudent.service.*;
+import com.bbte.styoudent.service.AssignmentService;
+import com.bbte.styoudent.service.CourseService;
+import com.bbte.styoudent.service.PersonService;
+import com.bbte.styoudent.service.ServiceException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.stream.Collectors;
 
 @CrossOrigin
 @Slf4j
@@ -54,11 +58,15 @@ public class AssignmentController {
         participationUtil.checkIfParticipates(courseId, person);
 
         try {
+            Assignment assignment = assignmentService.getByCourseIdAndId(courseId, assignmentId);
+
             if (person.getRole().equals(Role.ROLE_STUDENT)) {
                 assignmentUtil.checkIfPublished(courseId, assignmentId);
-            }
 
-            Assignment assignment = assignmentService.getByCourseIdAndId(courseId, assignmentId);
+                assignment.setComments(assignment.getComments().stream().filter((
+                        assignmentComment -> assignmentComment.getRecipient().equals(person))
+                ).collect(Collectors.toList()));
+            }
 
             return ResponseEntity.ok(assignmentAssembler.modelToDto(assignment));
         } catch (ServiceException se) {

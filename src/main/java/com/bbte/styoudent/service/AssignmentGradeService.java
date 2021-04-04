@@ -13,10 +13,4 @@ public interface AssignmentGradeService {
     AssignmentGrade save(AssignmentGrade assignmentGrade);
 
     boolean checkIfExistsByAssignmentIdAndSubmitter(Long assignmentId, Person submitter);
-
-    boolean checkIfExistsByAssignmentIdAndId(Long assignmentId, Long id);
-
-    void deleteByAssignmentIdAndSubmitterId(Long assignmentId, Long submitterId);
-
-    AssignmentGrade getByAssignmentIdAndId(Long assignmentId, Long id);
 }

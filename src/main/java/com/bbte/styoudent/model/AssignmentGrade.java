@@ -20,6 +20,4 @@ public class AssignmentGrade extends BaseEntity {
     @JoinColumn(name = "assignment_id")
     private Assignment assignment;
     private Double grade;
-    @OneToMany(mappedBy = "assignmentGrade", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<AssignmentGradeComment> assignmentGradeComments;
 }

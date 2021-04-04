@@ -54,30 +54,4 @@ public class AssignmentGradeServiceImpl implements AssignmentGradeService {
             throw new ServiceException("Assignment grade checking failed!", de);
         }
     }
-
-    @Override
-    public boolean checkIfExistsByAssignmentIdAndId(Long assignmentId, Long id) {
-        try {
-            return assignmentGradeRepository.existsByAssignmentIdAndId(assignmentId, id);
-        } catch (DataAccessException de) {
-            throw new ServiceException("Assignment grade checking failed!", de);
-        }
-    }
-
-    @Transactional
-    @Override
-    public void deleteByAssignmentIdAndSubmitterId(Long assignmentId, Long submitterId) {
-        try {
-            assignmentGradeRepository.deleteByAssignmentIdAndSubmitterId(assignmentId, submitterId);
-        } catch (DataAccessException de) {
-            throw new ServiceException("Assignment grade deletion failed!", de);
-        }
-    }
-
-    @Override
-    public AssignmentGrade getByAssignmentIdAndId(Long assignmentId, Long id) {
-         return assignmentGradeRepository.findByAssignmentIdAndId(assignmentId, id).orElseThrow(
-                 () -> new ServiceException("Assignment grade selection failed!")
-         );
-    }
 }

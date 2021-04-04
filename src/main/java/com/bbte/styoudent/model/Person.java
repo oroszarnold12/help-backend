@@ -3,11 +3,8 @@ package com.bbte.styoudent.model;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
-import org.hibernate.annotations.Type;
-import org.hibernate.type.ImageType;
 
 import javax.persistence.*;
-import java.awt.*;
 import java.util.List;
 
 import static javax.persistence.FetchType.LAZY;
@@ -44,7 +41,9 @@ public class Person extends BaseEntity {
     @OneToMany(mappedBy = "commenter", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DiscussionComment> discussionComments;
     @OneToMany(mappedBy = "commenter", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<AssignmentGradeComment> assignmentGradeComments;
+    private List<AssignmentComment> assignmentComments;
+    @OneToMany(mappedBy = "recipient", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<AssignmentComment> recipientAssignmentComments;
     @OneToMany(mappedBy = "submitter", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Submission> submissions;
     @OneToMany(mappedBy = "submitter", cascade = CascadeType.ALL, orphanRemoval = true)

@@ -5,9 +5,10 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 @Data
-public class AssignmentGradeCommentDto {
+public class AssignmentCommentDto {
     private Long id;
     private String content;
     private LocalDateTime date;
     private ThinPersonDto commenter;
+    private ThinPersonDto recipient;
 }

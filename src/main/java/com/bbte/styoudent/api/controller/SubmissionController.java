@@ -134,8 +134,6 @@ public class SubmissionController {
         try {
             Assignment assignment = assignmentService.getByCourseIdAndId(courseId, assignmentId);
 
-            assignmentGradeService.deleteByAssignmentIdAndSubmitterId(assignment.getId(), person.getId());
-
             String uploadedFileName = fileStorageService.storeFile(file);
 
             Submission submission = new Submission();
@@ -149,6 +147,7 @@ public class SubmissionController {
                     submissionService.save(submission)
             ));
         } catch (ServiceException se) {
+            se.printStackTrace();
             throw new InternalServerException("Could not POST submission!", se);
         }
     }
