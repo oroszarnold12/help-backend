@@ -4,18 +4,17 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
-import javax.persistence.Entity;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.List;
+
+import static javax.persistence.FetchType.LAZY;
 
 @Entity
-@Table(name = "submission")
 @Data
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
-public class Submission extends BaseEntity {
+public class AssignmentSubmission extends BaseEntity {
     @ManyToOne
     @JoinColumn(name = "submitter_id")
     private Person submitter;
@@ -23,6 +22,6 @@ public class Submission extends BaseEntity {
     @JoinColumn(name = "assignment_id")
     private Assignment assignment;
     private LocalDateTime date;
-    private String fileName;
-    private String uploadedFileName;
+    @OneToMany(mappedBy = "assignmentSubmission", cascade = CascadeType.ALL, fetch = LAZY, orphanRemoval = true)
+    private List<AssignmentSubmissionFile> files;
 }

@@ -5,7 +5,7 @@ import com.bbte.styoudent.api.exception.InternalServerException;
 import com.bbte.styoudent.dto.incoming.PersonPasswordDto;
 import com.bbte.styoudent.dto.outgoing.PersonDto;
 import com.bbte.styoudent.model.Person;
-import com.bbte.styoudent.model.PersonImage;
+import com.bbte.styoudent.model.FileObject;
 import com.bbte.styoudent.security.util.AuthUtil;
 import com.bbte.styoudent.service.PersonService;
 import com.bbte.styoudent.service.ServiceException;
@@ -69,9 +69,9 @@ public class UserController {
         Person person = personService.getPersonByEmail(AuthUtil.getCurrentUsername());
 
         try {
-            PersonImage personImage = new PersonImage();
-            personImage.setImage(image.getBytes());
-            person.setPersonImage(personImage);
+            FileObject fileObject = new FileObject();
+            fileObject.setBytes(image.getBytes());
+            person.setImage(fileObject);
 
             return personAssembler.modelToDto(
                     personService.savePerson(person)
@@ -89,10 +89,10 @@ public class UserController {
 
         Person person = personService.getPersonByEmail(AuthUtil.getCurrentUsername());
 
-        return (person.getPersonImage() == null || person.getPersonImage().getImage() == null) ?
+        return (person.getImage() == null || person.getImage().getBytes() == null) ?
                 null :
                 new ByteArrayResource(
-                        person.getPersonImage().getImage()
+                        person.getImage().getBytes()
                 );
     }
 
@@ -104,10 +104,10 @@ public class UserController {
 
         Person person = personService.getPersonById(userId);
 
-        return (person.getPersonImage() == null || person.getPersonImage().getImage() == null) ?
+        return (person.getImage() == null || person.getImage().getBytes() == null) ?
                 null :
                 new ByteArrayResource(
-                        person.getPersonImage().getImage()
+                        person.getImage().getBytes()
                 );
     }
 
@@ -118,8 +118,8 @@ public class UserController {
         log.debug("DELETE /user/image");
 
         Person person = personService.getPersonByEmail(AuthUtil.getCurrentUsername());
-        if (person.getPersonImage() != null) {
-            person.getPersonImage().setImage(null);
+        if (person.getImage() != null) {
+            person.getImage().setBytes(null);
         }
 
         try {

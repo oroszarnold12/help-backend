@@ -27,7 +27,7 @@ public class Person extends BaseEntity {
     @Column(name = "role", nullable = false)
     private Role role;
     @OneToOne(cascade = CascadeType.ALL, fetch = LAZY)
-    private PersonImage personImage;
+    private FileObject image;
     @OneToMany(mappedBy = "teacher", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Course> courses;
     @OneToMany(mappedBy = "person", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -45,7 +45,7 @@ public class Person extends BaseEntity {
     @OneToMany(mappedBy = "recipient", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<AssignmentComment> recipientAssignmentComments;
     @OneToMany(mappedBy = "submitter", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Submission> submissions;
+    private List<AssignmentSubmission> assignmentSubmissions;
     @OneToMany(mappedBy = "submitter", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<AssignmentGrade> assignmentGrades;
     @OneToMany(mappedBy = "submitter", cascade = CascadeType.ALL, orphanRemoval = true)

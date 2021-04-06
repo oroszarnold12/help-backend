@@ -28,7 +28,7 @@ public class Assignment extends BaseEntity {
     @JoinColumn(name = "course_id")
     private Course course;
     @OneToMany(mappedBy = "assignment", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Submission> submissions;
+    private List<AssignmentSubmission> assignmentSubmissions;
     @OneToMany(mappedBy = "assignment", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<AssignmentGrade> assignmentGrades;
     @OneToMany(mappedBy = "assignment", cascade = CascadeType.ALL, orphanRemoval = true)

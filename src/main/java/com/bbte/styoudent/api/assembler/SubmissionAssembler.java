@@ -1,7 +1,7 @@
 package com.bbte.styoudent.api.assembler;
 
-import com.bbte.styoudent.dto.outgoing.SubmissionDto;
-import com.bbte.styoudent.model.Submission;
+import com.bbte.styoudent.dto.outgoing.AssignmentSubmissionDto;
+import com.bbte.styoudent.model.AssignmentSubmission;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 
@@ -13,7 +13,7 @@ public class SubmissionAssembler {
         this.modelMapper = modelMapper;
     }
 
-    public SubmissionDto modelToDto(Submission submission) {
-        return this.modelMapper.map(submission, SubmissionDto.class);
+    public AssignmentSubmissionDto modelToDto(AssignmentSubmission assignmentSubmission) {
+        return this.modelMapper.map(assignmentSubmission, AssignmentSubmissionDto.class);
     }
 }

@@ -11,7 +11,7 @@ import javax.persistence.Lob;
 @Data
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
-public class PersonImage extends BaseEntity {
+public class AssignmentSubmissionFileObject extends BaseEntity {
     @Lob
-    private byte[] image;
+    private byte[] bytes;
 }

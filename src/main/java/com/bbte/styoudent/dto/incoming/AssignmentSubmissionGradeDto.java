@@ -5,7 +5,7 @@ import lombok.Data;
 import javax.validation.constraints.NotNull;
 
 @Data
-public class SubmissionGradeDto {
+public class AssignmentSubmissionGradeDto {
     @NotNull
     private Double grade;
 }
