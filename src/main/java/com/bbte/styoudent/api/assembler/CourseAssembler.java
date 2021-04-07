@@ -2,8 +2,10 @@ package com.bbte.styoudent.api.assembler;
 
 import com.bbte.styoudent.dto.incoming.CourseCreationDto;
 import com.bbte.styoudent.dto.outgoing.CourseDto;
+import com.bbte.styoudent.dto.outgoing.CourseFileDto;
 import com.bbte.styoudent.dto.outgoing.ThinCourseDto;
 import com.bbte.styoudent.model.Course;
+import com.bbte.styoudent.model.CourseFile;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 
@@ -25,5 +27,9 @@ public class CourseAssembler {
 
     public Course creationDtoToModel(CourseCreationDto courseCreationDto) {
         return modelMapper.map(courseCreationDto, Course.class);
+    }
+
+    public CourseFileDto modelToDto(CourseFile courseFile) {
+        return modelMapper.map(courseFile, CourseFileDto.class);
     }
 }

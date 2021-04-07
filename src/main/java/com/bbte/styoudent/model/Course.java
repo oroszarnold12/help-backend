@@ -41,6 +41,9 @@ public class Course extends BaseEntity {
     @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Quiz> quizzes;
 
+    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<CourseFile> files;
+
     public void setAssignments(List<Assignment> assignments) {
         if (this.assignments == null) {
             this.assignments = assignments;

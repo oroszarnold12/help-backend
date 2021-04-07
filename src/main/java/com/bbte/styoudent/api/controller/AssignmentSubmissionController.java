@@ -20,6 +20,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.validation.constraints.Size;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -170,7 +171,7 @@ public class AssignmentSubmissionController {
     public ResponseEntity<AssignmentSubmissionDto> saveSubmission(
             @PathVariable(name = "courseId") Long courseId,
             @PathVariable(name = "assignmentId") Long assignmentId,
-            @RequestParam("files") MultipartFile[] files
+            @RequestParam("files") @Size(min = 1, max = 5) MultipartFile[] files
     ) {
         log.debug("POST /courses/{}/assignments/{}/submissions", courseId, assignmentId);
 
@@ -214,7 +215,6 @@ public class AssignmentSubmissionController {
                     assignmentSubmissionService.save(assignmentSubmission)
             ));
         } catch (ServiceException se) {
-            se.printStackTrace();
             throw new InternalServerException("Could not POST submission!", se);
         }
     }

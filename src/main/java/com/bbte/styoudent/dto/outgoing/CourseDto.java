@@ -14,5 +14,6 @@ public class CourseDto {
     private List<ThinAnnouncementDto> announcements;
     private List<ThinDiscussionDto> discussions;
     private List<ThinQuizDto> quizzes;
+    private List<CourseFileDto> files;
     private ThinPersonDto teacher;
 }
