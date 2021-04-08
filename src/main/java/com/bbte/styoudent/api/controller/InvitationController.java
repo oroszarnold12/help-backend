@@ -92,6 +92,10 @@ public class InvitationController {
             );
         }
 
+        persons = persons.stream().filter(person -> !participationService.checkIfParticipates(course.getId(), person) &&
+                !invitationService.checkIfExistsByPersonIdAndCourseId(person.getId(), course.getId()))
+                .collect(Collectors.toList());
+
         try {
             persons.forEach((person -> invitationService.createInvitation(course, person)));
 

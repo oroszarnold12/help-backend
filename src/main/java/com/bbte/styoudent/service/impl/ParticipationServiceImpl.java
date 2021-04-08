@@ -9,6 +9,7 @@ import com.bbte.styoudent.service.ServiceException;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.util.List;
 
 @Service
@@ -70,4 +71,16 @@ public class ParticipationServiceImpl implements ParticipationService {
             throw new ServiceException("Participation insertion failed!", de);
         }
     }
+
+    @Transactional
+    @Override
+    public void deleteByParticipantIdAndCourseId(Long participantId, Long courseId) {
+        try {
+            participationRepository.deleteByPersonIdAndCourseId(participantId, courseId);
+        } catch (DataAccessException dataAccessException) {
+            dataAccessException.printStackTrace();
+            throw new ServiceException("Participation deletion failed!");
+        }
+    }
+
 }

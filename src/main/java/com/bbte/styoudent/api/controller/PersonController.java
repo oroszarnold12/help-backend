@@ -47,7 +47,8 @@ public class PersonController {
             if (person.getRole() == Role.ROLE_TEACHER) {
                 return ResponseEntity.ok(
                         Collections.singletonMap("persons", personService.getAllPersons()
-                                .stream().map(personAssembler::modelToThinDto)
+                                .stream().filter(person1 -> !person1.getRole().equals(Role.ROLE_ADMIN))
+                                .map(personAssembler::modelToThinDto)
                                 .collect(Collectors.toList())));
             } else {
                 return ResponseEntity.ok(

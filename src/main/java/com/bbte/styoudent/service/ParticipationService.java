@@ -18,4 +18,6 @@ public interface ParticipationService {
     Participation getByCourseIdAndPerson(Long courseId, Person person);
 
     Participation save(Participation participation);
+
+    void deleteByParticipantIdAndCourseId(Long participantId, Long courseId);
 }

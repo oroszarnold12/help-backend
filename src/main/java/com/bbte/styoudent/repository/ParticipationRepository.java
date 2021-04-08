@@ -16,4 +16,6 @@ public interface ParticipationRepository extends JpaRepository<Participation, Lo
     List<Participation> findAllByPerson(Person person);
 
     Optional<Participation> findByCourseIdAndPerson(Long courseId, Person person);
+
+    void deleteByPersonIdAndCourseId(Long personId, Long courseId);
 }

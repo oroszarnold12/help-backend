@@ -67,4 +67,13 @@ public class InvitationServiceImpl implements InvitationService {
             throw new ServiceException("Invitation selection with id: " + id + " failed!", ie);
         }
     }
+
+    @Override
+    public boolean checkIfExistsByPersonIdAndCourseId(Long personId, Long courseId) {
+        try {
+            return invitationRepository.existsByPersonIdAndCourseId(personId, courseId);
+        } catch (DataAccessException dataAccessException) {
+            throw new ServiceException("Invitation checking failed!", dataAccessException);
+        }
+    }
 }

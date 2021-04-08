@@ -8,5 +8,8 @@ import java.util.List;
 
 public interface InvitationRepository extends JpaRepository<Invitation, Long> {
     List<Invitation> findAllByPerson(Person person);
+
     boolean existsByIdAndPerson(Long id, Person person);
+
+    boolean existsByPersonIdAndCourseId(Long personId, Long courseId);
 }

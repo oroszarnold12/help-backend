@@ -17,4 +17,6 @@ public interface InvitationService {
     void deleteInvitation(Long id);
 
     Optional<Invitation> getInvitationById(Long id);
+
+    boolean checkIfExistsByPersonIdAndCourseId(Long personId, Long courseId);
 }
