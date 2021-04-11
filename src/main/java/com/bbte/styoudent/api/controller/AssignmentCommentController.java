@@ -79,9 +79,15 @@ public class AssignmentCommentController {
             assignmentComment.setRecipient(recipient);
             assignmentComment.setAssignment(assignment);
 
-            return ResponseEntity.ok(assignmentCommentAssembler.modelToDto(
-                    assignmentCommentService.save(assignmentComment)
-            ));
+            assignmentComment = assignmentCommentService.save(assignmentComment);
+
+            if (person.getRole().equals(Role.ROLE_TEACHER)) {
+                assignmentUtil.createSingleNotificationOfAssignmentSubmissionComment(assignmentComment, recipient);
+            } else {
+                assignmentUtil.createMultipleNotificationsOfAssignmentSubmissionComment(assignmentComment);
+            }
+
+            return ResponseEntity.ok(assignmentCommentAssembler.modelToDto(assignmentComment));
         } catch (ServiceException se) {
             throw new BadRequestException("Could not POST comment!", se);
         }

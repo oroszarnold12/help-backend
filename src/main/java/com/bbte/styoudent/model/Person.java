@@ -26,6 +26,7 @@ public class Person extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false)
     private Role role;
+    private String notificationToken;
     @OneToOne(cascade = CascadeType.ALL, fetch = LAZY)
     private FileObject image;
     @OneToMany(mappedBy = "teacher", cascade = CascadeType.ALL, orphanRemoval = true)

@@ -11,7 +11,10 @@ import com.bbte.styoudent.model.AssignmentGrade;
 import com.bbte.styoudent.model.Person;
 import com.bbte.styoudent.model.Role;
 import com.bbte.styoudent.security.util.AuthUtil;
-import com.bbte.styoudent.service.*;
+import com.bbte.styoudent.service.AssignmentGradeService;
+import com.bbte.styoudent.service.AssignmentService;
+import com.bbte.styoudent.service.PersonService;
+import com.bbte.styoudent.service.ServiceException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -101,9 +104,11 @@ public class AssignmentGradeController {
                 assignmentGrade.setSubmitter(submitter);
             }
 
-            return ResponseEntity.ok(gradeAssembler.modelToDto(
-                    assignmentGradeService.save(assignmentGrade)
-            ));
+            assignmentGrade = assignmentGradeService.save(assignmentGrade);
+
+            assignmentUtil.createSingleNotificationOfAssignmentGraded(assignmentGrade, submitter);
+
+            return ResponseEntity.ok(gradeAssembler.modelToDto(assignmentGrade));
         } catch (ServiceException se) {
             throw new InternalServerException("Could not POST grade!", se);
         }

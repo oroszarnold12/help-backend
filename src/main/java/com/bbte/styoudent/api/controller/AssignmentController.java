@@ -90,9 +90,13 @@ public class AssignmentController {
             Assignment assignment = assignmentAssembler.creationDtoToModel(assignmentCreationDto);
             assignment.setCourse(course);
 
-            return ResponseEntity.ok(assignmentAssembler.modelToDto(
-                    assignmentService.save(assignment)
-            ));
+            assignment = assignmentService.save(assignment);
+
+            if (assignment.getPublished()) {
+                assignmentUtil.createMultipleNotificationsOfAssignmentCreation(assignment);
+            }
+
+            return ResponseEntity.ok(assignmentAssembler.modelToDto(assignment));
         } catch (ServiceException se) {
             throw new BadRequestException("Could not POST assignment!", se);
         }
@@ -118,7 +122,11 @@ public class AssignmentController {
             assignment.setDescription(assignmentCreationDto.getDescription());
             assignment.setPublished(assignmentCreationDto.getPublished());
 
-            assignmentService.save(assignment);
+            assignment = assignmentService.save(assignment);
+
+            if (assignment.getPublished()) {
+                assignmentUtil.createMultipleNotificationsOfAssignmentCreation(assignment);
+            }
 
             return ResponseEntity.ok(assignmentAssembler.modelToDto(assignment));
         } catch (ServiceException se) {

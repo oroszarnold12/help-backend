@@ -3,13 +3,14 @@ package com.bbte.styoudent.api.controller;
 import com.bbte.styoudent.api.assembler.PersonAssembler;
 import com.bbte.styoudent.api.exception.BadRequestException;
 import com.bbte.styoudent.api.exception.ConflictException;
-import com.bbte.styoudent.dto.outgoing.PersonDto;
 import com.bbte.styoudent.dto.incoming.PersonSignUpDto;
 import com.bbte.styoudent.dto.outgoing.ApiResponseMessage;
+import com.bbte.styoudent.dto.outgoing.PersonDto;
 import com.bbte.styoudent.model.Person;
 import com.bbte.styoudent.model.Role;
 import com.bbte.styoudent.security.authentication.LoginRequest;
 import com.bbte.styoudent.security.authentication.Token;
+import com.bbte.styoudent.security.util.AuthUtil;
 import com.bbte.styoudent.security.util.CookieUtil;
 import com.bbte.styoudent.service.PersonService;
 import com.bbte.styoudent.service.ServiceException;
@@ -19,6 +20,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -81,6 +83,20 @@ public class AuthController {
 
     @GetMapping("/logout")
     public ResponseEntity<ApiResponseMessage> logout(HttpServletRequest request, HttpServletResponse response) {
+        if (SecurityContextHolder.getContext().getAuthentication() != null &&
+                SecurityContextHolder.getContext().getAuthentication().isAuthenticated() &&
+                !(SecurityContextHolder.getContext().getAuthentication()
+                        instanceof AnonymousAuthenticationToken)) {
+            Person person = personService.getPersonByEmail(AuthUtil.getCurrentUsername());
+            person.setNotificationToken(null);
+
+            try {
+                personService.savePerson(person);
+            } catch (ServiceException ignored) {
+            }
+        }
+
+
         SecurityContextHolder.clearContext();
 
         if (request.getCookies() != null) {

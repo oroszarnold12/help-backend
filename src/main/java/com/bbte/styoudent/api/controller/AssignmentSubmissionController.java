@@ -210,10 +210,13 @@ public class AssignmentSubmissionController {
             }).collect(Collectors.toList());
 
             assignmentSubmission.setFiles(fileObjects);
+            AssignmentSubmission result = assignmentSubmissionService.save(assignmentSubmission);
 
-            return ResponseEntity.ok(submissionAssembler.modelToDto(
-                    assignmentSubmissionService.save(assignmentSubmission)
-            ));
+            if (assignmentUtil.checkIfGraded(assignmentId, person)) {
+                assignmentUtil.createMultipleNotificationsOfAssignmentSubmissionCreation(assignment);
+            }
+
+            return ResponseEntity.ok(submissionAssembler.modelToDto(result));
         } catch (ServiceException se) {
             throw new InternalServerException("Could not POST submission!", se);
         }
