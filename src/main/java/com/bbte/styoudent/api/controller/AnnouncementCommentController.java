@@ -67,9 +67,11 @@ public class AnnouncementCommentController {
             announcementComment.setCommenter(person);
             announcementComment.setAnnouncement(announcement);
 
-            return ResponseEntity.ok(announcementCommentAssembler.modelToDto(
-                    announcementCommentService.save(announcementComment)
-            ));
+            announcementComment = announcementCommentService.save(announcementComment);
+
+            announcementUtil.createMultipleNotificationsOfAnnouncementComment(announcementComment);
+
+            return ResponseEntity.ok(announcementCommentAssembler.modelToDto(announcementComment));
         } catch (ServiceException se) {
             throw new BadRequestException("Could not POST comment!", se);
         }

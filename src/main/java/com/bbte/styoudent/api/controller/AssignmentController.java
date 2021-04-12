@@ -92,9 +92,7 @@ public class AssignmentController {
 
             assignment = assignmentService.save(assignment);
 
-            if (assignment.getPublished()) {
-                assignmentUtil.createMultipleNotificationsOfAssignmentCreation(assignment);
-            }
+            assignmentUtil.createMultipleNotificationsOfAssignmentCreation(assignment);
 
             return ResponseEntity.ok(assignmentAssembler.modelToDto(assignment));
         } catch (ServiceException se) {
@@ -124,9 +122,8 @@ public class AssignmentController {
 
             assignment = assignmentService.save(assignment);
 
-            if (assignment.getPublished()) {
-                assignmentUtil.createMultipleNotificationsOfAssignmentCreation(assignment);
-            }
+            assignmentUtil.createMultipleNotificationsOfAssignmentCreation(assignment);
+
 
             return ResponseEntity.ok(assignmentAssembler.modelToDto(assignment));
         } catch (ServiceException se) {

@@ -80,9 +80,11 @@ public class AnnouncementController {
             announcement.setCreator(person);
             announcement.setDate(LocalDateTime.now());
 
-            return ResponseEntity.ok(announcementAssembler.modelToDto(
-                    announcementService.save(announcement)
-            ));
+            announcement = announcementService.save(announcement);
+
+            announcementUtil.createMultipleNotificationsOfAnnouncementCreation(announcement);
+
+            return ResponseEntity.ok(announcementAssembler.modelToDto(announcement));
         } catch (ServiceException se) {
             throw new BadRequestException("Could not POST announcement!", se);
         }

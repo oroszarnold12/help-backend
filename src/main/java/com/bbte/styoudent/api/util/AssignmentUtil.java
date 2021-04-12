@@ -82,7 +82,7 @@ public class AssignmentUtil {
                 firebaseMessagingService.sendNotification(note, recipient.getNotificationToken());
             } catch (ServiceException serviceException) {
                 throw new InternalServerException(
-                        "Could not send assignment notification for student!", serviceException
+                        "Could not send assignment notification!", serviceException
                 );
             }
         }
@@ -101,7 +101,7 @@ public class AssignmentUtil {
 
         if (failedFor.size() > 0) {
             throw new InternalServerException(
-                    "Could not send assignment notification for students: " + String.join(", ", failedFor)
+                    "Could not send assignment notification for people: " + String.join(", ", failedFor)
             );
         }
     }
