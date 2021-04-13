@@ -5,11 +5,9 @@ import com.bbte.styoudent.api.exception.NotFoundException;
 import com.bbte.styoudent.model.*;
 import com.bbte.styoudent.service.AssignmentGradeService;
 import com.bbte.styoudent.service.AssignmentService;
-import com.bbte.styoudent.service.FirebaseMessagingService;
 import com.bbte.styoudent.service.ServiceException;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,13 +18,13 @@ import java.util.stream.Collectors;
 public class AssignmentUtil {
     private final AssignmentService assignmentService;
     private final AssignmentGradeService assignmentGradeService;
-    private final FirebaseMessagingService firebaseMessagingService;
+    private final FirebaseUtil firebaseUtil;
 
     public AssignmentUtil(AssignmentService assignmentService, AssignmentGradeService assignmentGradeService,
-                          FirebaseMessagingService firebaseMessagingService) {
+                          FirebaseUtil firebaseUtil) {
         this.assignmentService = assignmentService;
         this.assignmentGradeService = assignmentGradeService;
-        this.firebaseMessagingService = firebaseMessagingService;
+        this.firebaseUtil = firebaseUtil;
     }
 
     public void checkIfHasThisAssignment(Long courseId, Long assignmentId) {
@@ -76,36 +74,6 @@ public class AssignmentUtil {
         return newFileName.get();
     }
 
-    private void sendNotification(Note note, Person recipient) {
-        if (recipient.getNotificationToken() != null) {
-            try {
-                firebaseMessagingService.sendNotification(note, recipient.getNotificationToken());
-            } catch (ServiceException serviceException) {
-                throw new InternalServerException(
-                        "Could not send assignment notification!", serviceException
-                );
-            }
-        }
-    }
-
-    private void sendMultipleNotification(Note note, List<Person> recipients) {
-        List<String> failedFor = new ArrayList<>();
-
-        recipients.forEach(recipient -> {
-            try {
-                sendNotification(note, recipient);
-            } catch (InternalServerException internalServerException) {
-                failedFor.add(recipient.getFirstName() + recipient.getLastName());
-            }
-        });
-
-        if (failedFor.size() > 0) {
-            throw new InternalServerException(
-                    "Could not send assignment notification for people: " + String.join(", ", failedFor)
-            );
-        }
-    }
-
     public void createSingleNotificationOfAssignmentGraded(AssignmentGrade assignmentGrade, Person submitter) {
         Assignment assignment = assignmentGrade.getAssignment();
         Course course = assignment.getCourse();
@@ -115,7 +83,7 @@ public class AssignmentUtil {
 
         Note note = createDataForAssignmentNotification(assignment, course, title, body);
 
-        sendNotification(note, submitter);
+        firebaseUtil.sendNotification(note, submitter, "assignment grade");
     }
 
     public void createMultipleNotificationsOfAssignmentCreation(Assignment assignment) {
@@ -129,7 +97,7 @@ public class AssignmentUtil {
             List<Person> participants =
                     course.getParticipations().stream().map(Participation::getPerson).collect(Collectors.toList());
 
-            sendMultipleNotification(note, participants);
+            firebaseUtil.sendMultipleNotification(note, participants, "assignment");
         }
     }
 
@@ -145,7 +113,7 @@ public class AssignmentUtil {
                 .filter(person -> person.getRole().equals(Role.ROLE_TEACHER))
                 .collect(Collectors.toList());
 
-        sendMultipleNotification(note, teachers);
+        firebaseUtil.sendMultipleNotification(note, teachers, "assignment submission");
     }
 
     public void createMultipleNotificationsOfAssignmentSubmissionComment(AssignmentComment assignmentComment) {
@@ -163,7 +131,7 @@ public class AssignmentUtil {
                 .filter(person -> person.getRole().equals(Role.ROLE_TEACHER))
                 .collect(Collectors.toList());
 
-        sendMultipleNotification(note, teachers);
+        firebaseUtil.sendMultipleNotification(note, teachers, "assignment submission comment");
     }
 
     public void createSingleNotificationOfAssignmentSubmissionComment(AssignmentComment assignmentComment,
@@ -177,7 +145,7 @@ public class AssignmentUtil {
 
         Note note = createDataForAssignmentNotification(assignment, course, title, body);
 
-        sendNotification(note, recipient);
+        firebaseUtil.sendNotification(note, recipient, "assignment submission comment");
     }
 
     private Note createDataForAssignmentSubmissionNotification(Assignment assignment, Course course, String title, String body) {

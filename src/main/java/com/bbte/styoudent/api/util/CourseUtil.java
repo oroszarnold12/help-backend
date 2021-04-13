@@ -24,9 +24,7 @@ public class CourseUtil {
 
         newFileName.set(oldFileName);
 
-        while (files.stream().anyMatch((file) -> {
-            return file.getFileName().equals(newFileName.get());
-        })) {
+        while (files.stream().anyMatch((file) -> file.getFileName().equals(newFileName.get()))) {
             newFileName.set(oldFileName + "-" + i);
             i++;
         }

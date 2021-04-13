@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface InvitationService {
-    void createInvitation(Course course, Person person);
+    Invitation createInvitation(Course course, Person person);
 
     List<Invitation> getAllByPerson(Person person);
 

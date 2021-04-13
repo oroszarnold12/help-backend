@@ -3,6 +3,7 @@ package com.bbte.styoudent.api.controller;
 import com.bbte.styoudent.api.assembler.PersonAssembler;
 import com.bbte.styoudent.api.exception.BadRequestException;
 import com.bbte.styoudent.api.exception.InternalServerException;
+import com.bbte.styoudent.api.util.ParticipantUtil;
 import com.bbte.styoudent.api.util.ParticipationUtil;
 import com.bbte.styoudent.dto.outgoing.ThinPersonDto;
 import com.bbte.styoudent.model.Course;
@@ -18,7 +19,6 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import javax.transaction.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -32,15 +32,17 @@ public class ParticipantController {
     private final CourseService courseService;
     private final PersonAssembler personAssembler;
     private final ParticipationService participationService;
+    private final ParticipantUtil participantUtil;
 
     public ParticipantController(PersonService personService, ParticipationUtil participationUtil,
                                  CourseService courseService, PersonAssembler personAssembler,
-                                 ParticipationService participationService) {
+                                 ParticipationService participationService, ParticipantUtil participantUtil) {
         this.personService = personService;
         this.participationUtil = participationUtil;
         this.courseService = courseService;
         this.personAssembler = personAssembler;
         this.participationService = participationService;
+        this.participantUtil = participantUtil;
     }
 
     @GetMapping
@@ -79,6 +81,8 @@ public class ParticipantController {
             }
 
             participationService.deleteByParticipantIdAndCourseId(participantId, courseId);
+
+            participantUtil.createSingleNotificationOfKick(participantId, courseId);
 
             return ResponseEntity.noContent().build();
         } catch (ServiceException serviceException) {

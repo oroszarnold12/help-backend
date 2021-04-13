@@ -82,9 +82,11 @@ public class QuizController {
             quiz.setCourse(course);
             quiz.setPoints(0.0);
 
-            return ResponseEntity.ok(quizAssembler.modelToDto(
-                    quizService.save(quiz)
-            ));
+            quiz = quizService.save(quiz);
+
+            quizUtil.createMultipleNotificationsOfQuizCreation(quiz);
+
+            return ResponseEntity.ok(quizAssembler.modelToDto(quiz));
         } catch (ServiceException se) {
             throw new BadRequestException("Could not POST quiz!", se);
         }
@@ -113,6 +115,8 @@ public class QuizController {
             quiz.setPublished(quizCreationDto.getPublished());
 
             quizService.save(quiz);
+
+            quizUtil.createMultipleNotificationsOfQuizCreation(quiz);
 
             return ResponseEntity.ok(quizAssembler.modelToDto(quiz));
         } catch (ServiceException se) {

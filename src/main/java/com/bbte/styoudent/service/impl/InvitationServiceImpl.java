@@ -21,12 +21,12 @@ public class InvitationServiceImpl implements InvitationService {
     }
 
     @Override
-    public void createInvitation(Course course, Person person) {
+    public Invitation createInvitation(Course course, Person person) {
         try {
             Invitation invitation = new Invitation();
             invitation.setCourse(course);
             invitation.setPerson(person);
-            invitationRepository.save(invitation);
+            return invitationRepository.save(invitation);
         } catch (DataAccessException de) {
             throw new ServiceException("Invitation creation failed!", de);
         }

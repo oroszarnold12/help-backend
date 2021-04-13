@@ -3,6 +3,7 @@ package com.bbte.styoudent.api.controller;
 import com.bbte.styoudent.api.assembler.PersonAssembler;
 import com.bbte.styoudent.api.exception.BadRequestException;
 import com.bbte.styoudent.api.exception.InternalServerException;
+import com.bbte.styoudent.api.util.PersonUtil;
 import com.bbte.styoudent.dto.outgoing.PersonDto;
 import com.bbte.styoudent.dto.incoming.PersonUpdateDto;
 import com.bbte.styoudent.dto.outgoing.ApiResponseMessage;
@@ -29,11 +30,13 @@ import java.util.stream.Collectors;
 public class PersonController {
     private final PersonService personService;
     private final PersonAssembler personAssembler;
+    private final PersonUtil personUtil;
 
     public PersonController(PersonService personService,
-                            PersonAssembler personAssembler) {
+                            PersonAssembler personAssembler, PersonUtil personUtil) {
         this.personService = personService;
         this.personAssembler = personAssembler;
+        this.personUtil = personUtil;
     }
 
     @GetMapping
@@ -73,6 +76,8 @@ public class PersonController {
 
             person.setRole(incomingPerson.getRole());
             personService.savePerson(person);
+
+            personUtil.createSingleNotificationOfRoleChange(person);
 
             return ResponseEntity.ok(personAssembler.modelToDto(person));
         } catch (ServiceException se) {

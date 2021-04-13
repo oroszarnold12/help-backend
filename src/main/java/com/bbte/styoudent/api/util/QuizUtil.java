@@ -11,21 +11,26 @@ import com.bbte.styoudent.service.ServiceException;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 @Component
 public class QuizUtil {
     private final QuizService quizService;
     private final QuizGradeService quizGradeService;
     private final QuizSubmissionService quizSubmissionService;
+    private final FirebaseUtil firebaseUtil;
 
     public QuizUtil(QuizService quizService, QuizGradeService quizGradeService,
-                    QuizSubmissionService quizSubmissionService) {
+                    QuizSubmissionService quizSubmissionService, FirebaseUtil firebaseUtil) {
         this.quizService = quizService;
         this.quizGradeService = quizGradeService;
         this.quizSubmissionService = quizSubmissionService;
+        this.firebaseUtil = firebaseUtil;
     }
 
     public void checkIfHasThisQuiz(Long courseId, Long quizId) {
@@ -130,6 +135,30 @@ public class QuizUtil {
             }
         } catch (ServiceException se) {
             throw new InternalServerException("Could not check quiz!", se);
+        }
+    }
+
+    private Note createDataForQuizNotification(Quiz quiz, Course course, String title, String body) {
+        Map<String, String> data = new HashMap<>();
+        data.put("forQuiz", "true");
+        data.put("courseId", course.getId().toString());
+        data.put("quizId", quiz.getId().toString());
+
+        return new Note(title, body, data);
+    }
+
+    public void createMultipleNotificationsOfQuizCreation(Quiz quiz) {
+        if (quiz.getPublished()) {
+            Course course = quiz.getCourse();
+            String title = course.getName() + " quiz created!";
+            String body = "Check out " + quiz.getName() + "!";
+
+            Note note = createDataForQuizNotification(quiz, course, title, body);
+
+            List<Person> participants =
+                    course.getParticipations().stream().map(Participation::getPerson).collect(Collectors.toList());
+
+            firebaseUtil.sendMultipleNotification(note, participants, "quiz");
         }
     }
 }

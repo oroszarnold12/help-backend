@@ -11,7 +11,6 @@ import org.jsoup.nodes.Document;
 import org.jsoup.safety.Whitelist;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,12 +19,11 @@ import java.util.stream.Collectors;
 @Component
 public class AnnouncementUtil {
     private final AnnouncementService announcementService;
-    private final FirebaseMessagingService firebaseMessagingService;
+    private final FirebaseUtil firebaseUtil;
 
-    public AnnouncementUtil(AnnouncementService announcementService,
-                            FirebaseMessagingService firebaseMessagingService) {
+    public AnnouncementUtil(AnnouncementService announcementService, FirebaseUtil firebaseUtil) {
         this.announcementService = announcementService;
-        this.firebaseMessagingService = firebaseMessagingService;
+        this.firebaseUtil = firebaseUtil;
     }
 
     public void checkIfHasThisAnnouncement(Long courseId, Long announcementId) {
@@ -40,36 +38,6 @@ public class AnnouncementUtil {
         }
     }
 
-    private void sendNotification(Note note, Person recipient) {
-        if (recipient.getNotificationToken() != null) {
-            try {
-                firebaseMessagingService.sendNotification(note, recipient.getNotificationToken());
-            } catch (ServiceException serviceException) {
-                throw new InternalServerException(
-                        "Could not send announcement notification for student!", serviceException
-                );
-            }
-        }
-    }
-
-    private void sendMultipleNotification(Note note, List<Person> recipients) {
-        List<String> failedFor = new ArrayList<>();
-
-        recipients.forEach(recipient -> {
-            try {
-                sendNotification(note, recipient);
-            } catch (InternalServerException internalServerException) {
-                failedFor.add(recipient.getFirstName() + recipient.getLastName());
-            }
-        });
-
-        if (failedFor.size() > 0) {
-            throw new InternalServerException(
-                    "Could not send announcement notification for people: " + String.join(", ", failedFor)
-            );
-        }
-    }
-
     public void createMultipleNotificationsOfAnnouncementCreation(Announcement announcement) {
         Course course = announcement.getCourse();
         String title = course.getName() + " announcement created!";
@@ -80,7 +48,7 @@ public class AnnouncementUtil {
         List<Person> participants =
                 course.getParticipations().stream().map(Participation::getPerson).collect(Collectors.toList());
 
-        sendMultipleNotification(note, participants);
+        firebaseUtil.sendMultipleNotification(note, participants, "announcement");
     }
 
     public void createMultipleNotificationsOfAnnouncementComment(AnnouncementComment announcementComment) {
@@ -108,7 +76,7 @@ public class AnnouncementUtil {
                 teachers.add(person);
         }
 
-        sendMultipleNotification(note, teachers);
+        firebaseUtil.sendMultipleNotification(note, teachers, "announcement comment");
     }
 
     private Note createDataForAnnouncementNotification(Announcement announcement, Course course, String title, String body) {

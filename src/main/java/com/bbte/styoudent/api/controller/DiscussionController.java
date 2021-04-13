@@ -82,9 +82,11 @@ public class DiscussionController {
             discussion.setDate(LocalDateTime.now());
             discussion.setCreator(person);
 
-            return ResponseEntity.ok(discussionAssembler.modelToDto(
-                    discussionService.save(discussion)
-            ));
+            discussion = discussionService.save(discussion);
+
+            discussionUtil.createMultipleNotificationsOfDiscussionCreation(discussion);
+
+            return ResponseEntity.ok(discussionAssembler.modelToDto(discussion));
         } catch (ServiceException se) {
             throw new BadRequestException("Could not POST discussion!", se);
         }

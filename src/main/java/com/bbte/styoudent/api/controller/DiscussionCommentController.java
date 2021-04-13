@@ -65,9 +65,11 @@ public class DiscussionCommentController {
             discussionComment.setCommenter(person);
             discussionComment.setDiscussion(discussion);
 
-            return ResponseEntity.ok(discussionCommentAssembler.modelToDto(
-                    discussionCommentService.save(discussionComment)
-            ));
+            discussionComment = discussionCommentService.save(discussionComment);
+
+            discussionUtil.createMultipleNotificationsOfDiscussionComment(discussionComment);
+
+            return ResponseEntity.ok(discussionCommentAssembler.modelToDto(discussionComment));
         } catch (ServiceException se) {
             throw new BadRequestException("Could not POST comment!", se);
         }

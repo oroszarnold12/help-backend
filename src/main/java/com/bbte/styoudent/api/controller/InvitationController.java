@@ -4,6 +4,7 @@ import com.bbte.styoudent.api.assembler.InvitationAssembler;
 import com.bbte.styoudent.api.exception.BadRequestException;
 import com.bbte.styoudent.api.exception.ForbiddenException;
 import com.bbte.styoudent.api.exception.InternalServerException;
+import com.bbte.styoudent.api.util.InvitationUtil;
 import com.bbte.styoudent.api.util.ParticipationUtil;
 import com.bbte.styoudent.dto.incoming.InvitationCreationDto;
 import com.bbte.styoudent.dto.outgoing.ApiResponseMessage;
@@ -32,16 +33,19 @@ public class InvitationController {
     private final ParticipationService participationService;
     private final InvitationAssembler invitationAssembler;
     private final ParticipationUtil participationUtil;
+    private final InvitationUtil invitationUtil;
 
     public InvitationController(CourseService courseService, InvitationService invitationService,
                                 PersonService personService, ParticipationService participationService,
-                                InvitationAssembler invitationAssembler, ParticipationUtil participationUtil) {
+                                InvitationAssembler invitationAssembler, ParticipationUtil participationUtil,
+                                InvitationUtil invitationUtil) {
         this.courseService = courseService;
         this.invitationService = invitationService;
         this.personService = personService;
         this.participationService = participationService;
         this.invitationAssembler = invitationAssembler;
         this.participationUtil = participationUtil;
+        this.invitationUtil = invitationUtil;
     }
 
     @GetMapping
@@ -97,7 +101,9 @@ public class InvitationController {
                 .collect(Collectors.toList());
 
         try {
-            persons.forEach((person -> invitationService.createInvitation(course, person)));
+            persons.forEach((person -> invitationUtil.createSingleNotificationForInvitation(
+                    invitationService.createInvitation(course, person)
+            )));
 
             return ResponseEntity.ok().body(new ApiResponseMessage("Invitations created successfully!"));
         } catch (ServiceException se) {
