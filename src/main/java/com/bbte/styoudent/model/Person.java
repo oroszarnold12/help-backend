@@ -1,5 +1,8 @@
 package com.bbte.styoudent.model;
 
+import com.bbte.styoudent.model.conversation.Conversation;
+import com.bbte.styoudent.model.conversation.ConversationMessage;
+import com.bbte.styoudent.model.conversation.ConversationParticipation;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
@@ -55,4 +58,10 @@ public class Person extends BaseEntity {
     private List<QuizGrade> quizGrades;
     @OneToMany(mappedBy = "uploader", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<CourseFile> courseFiles;
+    @OneToMany(mappedBy = "creator", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ConversationMessage> conversationMessages;
+    @OneToMany(mappedBy = "creator", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Conversation> conversations;
+    @OneToMany(mappedBy = "person", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ConversationParticipation> conversationParticipations;
 }

@@ -40,14 +40,14 @@ public class PersonController {
     }
 
     @GetMapping
-    @PreAuthorize("hasRole('TEACHER') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('TEACHER') or hasRole('ADMIN') or hasRole('STUDENT')")
     ResponseEntity<Map<String, List<?>>> getPersons() {
         log.debug("GET /persons");
 
         Person person = personService.getPersonByEmail(AuthUtil.getCurrentUsername());
 
         try {
-            if (person.getRole() == Role.ROLE_TEACHER) {
+            if (person.getRole() == Role.ROLE_TEACHER || person.getRole() == Role.ROLE_STUDENT) {
                 return ResponseEntity.ok(
                         Collections.singletonMap("persons", personService.getAllPersons()
                                 .stream().filter(person1 -> !person1.getRole().equals(Role.ROLE_ADMIN))
