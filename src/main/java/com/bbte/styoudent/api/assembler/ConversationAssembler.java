@@ -32,7 +32,9 @@ public class ConversationAssembler {
                 : null);
 
         if (conversation.getMessages().size() > 0) {
-            thinConversationDto.setLastMessage(messageModelToDto(conversation.getMessages().get(0)));
+            thinConversationDto.setLastMessage(messageModelToDto(
+                    conversation.getMessages().get(conversation.getMessages().size() - 1))
+            );
         }
 
         return thinConversationDto;
@@ -60,7 +62,7 @@ public class ConversationAssembler {
             conversation.getMessages().sort((conversationMessage1, conversationMessage2) -> {
                 if (conversationMessage1.getCreationDate() == null || conversationMessage2.getCreationDate() == null)
                     return 0;
-                return conversationMessage2.getCreationDate().compareTo(conversationMessage1.getCreationDate());
+                return conversationMessage1.getCreationDate().compareTo(conversationMessage2.getCreationDate());
             });
         }
     }

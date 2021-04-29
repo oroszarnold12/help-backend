@@ -43,7 +43,7 @@ public class FirebaseUtil {
 
         if (failedFor.size() > 0) {
             throw new InternalServerException(
-                    "Could not send announcement notification for people: " + String.join(", ", failedFor)
+                    "Could not send "+ entity +" notification for people: " + String.join(", ", failedFor)
             );
         }
     }

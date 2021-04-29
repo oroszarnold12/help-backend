@@ -4,17 +4,16 @@ import com.bbte.styoudent.api.exception.BadRequestException;
 import com.bbte.styoudent.api.exception.ForbiddenException;
 import com.bbte.styoudent.api.exception.InternalServerException;
 import com.bbte.styoudent.api.exception.NotFoundException;
-import com.bbte.styoudent.model.Person;
+import com.bbte.styoudent.model.*;
 import com.bbte.styoudent.model.conversation.Conversation;
 import com.bbte.styoudent.model.conversation.ConversationMessage;
+import com.bbte.styoudent.model.conversation.ConversationParticipation;
 import com.bbte.styoudent.service.*;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedHashSet;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Component
 public class ConversationUtil {
@@ -22,14 +21,16 @@ public class ConversationUtil {
     private final PersonService personService;
     private final ConversationService conversationService;
     private final ConversationMessageService conversationMessageService;
+    private final FirebaseUtil firebaseUtil;
 
     public ConversationUtil(ConversationParticipationService conversationParticipationService,
                             PersonService personService, ConversationService conversationService,
-                            ConversationMessageService conversationMessageService) {
+                            ConversationMessageService conversationMessageService, FirebaseUtil firebaseUtil) {
         this.conversationParticipationService = conversationParticipationService;
         this.personService = personService;
         this.conversationService = conversationService;
         this.conversationMessageService = conversationMessageService;
+        this.firebaseUtil = firebaseUtil;
     }
 
     public boolean checkIfParticipates(Long conversationId, Long personId) {
@@ -128,5 +129,31 @@ public class ConversationUtil {
                     "Conversation with id: " + conversationId + " has no message with id: " + messageId + "!"
             );
         }
+    }
+
+    public void createMultipleNotificationsOfMessageCreation(ConversationMessage conversationMessage) {
+        Conversation conversation = conversationMessage.getConversation();
+        String title = conversation.getName() != null ? conversation.getName() : "New message!";
+        String body = conversationMessage.getCreator().getFirstName() + " " +
+                conversationMessage.getCreator().getLastName() + ": " +
+                conversationMessage.getContent();
+
+        Note note = createDataForMessageNotification(title, body);
+
+        List<Person> participants =
+                conversation.getConversationParticipations() != null ?
+                        conversation.getConversationParticipations().stream().map(ConversationParticipation::getPerson)
+                                .filter(person -> !person.getId().equals(conversationMessage.getCreator().getId()))
+                                .collect(Collectors.toList())
+                        : Collections.emptyList();
+
+        firebaseUtil.sendMultipleNotification(note, participants, "chat");
+    }
+
+    private Note createDataForMessageNotification(String title, String body) {
+        Map<String, String> data = new HashMap<>();
+        data.put("forChat", "true");
+
+        return new Note(title, body, data);
     }
 }

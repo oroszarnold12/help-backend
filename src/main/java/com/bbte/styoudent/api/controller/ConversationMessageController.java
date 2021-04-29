@@ -60,11 +60,11 @@ public class ConversationMessageController {
         conversationMessage.setDeleted(false);
 
         try {
-            return ResponseEntity.ok(
-                    conversationAssembler.messageModelToDto(
-                            conversationMessageService.save(conversationMessage)
-                    )
-            );
+            conversationMessage = conversationMessageService.save(conversationMessage);
+
+            conversationUtil.createMultipleNotificationsOfMessageCreation(conversationMessage);
+
+            return ResponseEntity.ok(conversationAssembler.messageModelToDto(conversationMessage));
         } catch (ServiceException serviceException) {
             throw new InternalServerException("Could not save conversation message!", serviceException);
         }
