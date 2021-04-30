@@ -67,7 +67,9 @@ public class AssignmentUtil {
         final AtomicReference<String> newFileName = new AtomicReference<>();
         newFileName.set(oldFileName);
         while (files.stream().anyMatch((file) -> file.getFileName().equals(newFileName.get()))) {
-            newFileName.set(oldFileName + "-" + i);
+            int at = oldFileName.lastIndexOf(".");
+            String toAppend = "-" + i;
+            newFileName.set(oldFileName.substring(0, at) + toAppend + oldFileName.substring(at));
             i++;
         }
 
