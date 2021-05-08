@@ -62,8 +62,6 @@ public class AssignmentCommentController {
         participationUtil.checkIfParticipates(courseId, person);
 
         try {
-            Assignment assignment = assignmentService.getByCourseIdAndId(courseId, assignmentId);
-
             Person recipient;
             if (person.getRole().equals(Role.ROLE_TEACHER)) {
                 recipient = personService.getPersonByEmail(assignmentCommentCreationDto.getRecipientEmail());
@@ -71,6 +69,8 @@ public class AssignmentCommentController {
             } else {
                 recipient = person;
             }
+
+            Assignment assignment = assignmentService.getByCourseIdAndId(courseId, assignmentId);
 
             AssignmentComment assignmentComment = new AssignmentComment();
             assignmentComment.setContent(assignmentCommentCreationDto.getContent());

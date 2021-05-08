@@ -17,7 +17,6 @@ public class ConversationMessageServiceImpl implements ConversationMessageServic
         this.conversationMessageRepository = conversationMessageRepository;
     }
 
-
     @Override
     public ConversationMessage save(ConversationMessage conversationMessage) {
         try {

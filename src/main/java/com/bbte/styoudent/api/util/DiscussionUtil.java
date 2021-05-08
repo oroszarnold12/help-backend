@@ -11,9 +11,9 @@ import org.jsoup.safety.Whitelist;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 @Component
@@ -39,7 +39,7 @@ public class DiscussionUtil {
     }
 
     private Note createDataForDiscussionNotification(Discussion discussion, Course course, String title, String body) {
-        Map<String, String> data = new HashMap<>();
+        Map<String, String> data = new ConcurrentHashMap<>();
         data.put("forDiscussion", "true");
         data.put("courseId", course.getId().toString());
         data.put("discussionId", discussion.getId().toString());
@@ -64,9 +64,9 @@ public class DiscussionUtil {
         Discussion discussion = discussionComment.getDiscussion();
         Course course = discussion.getCourse();
         String title = "New comment for: " + discussion.getName() + "!";
-        String body = discussionComment.getCommenter().getFirstName() + " " +
-                discussionComment.getCommenter().getLastName() +
-                ": " + Jsoup.clean(discussionComment.getContent(), "", Whitelist.none(),
+        String body = discussionComment.getCommenter().getFirstName() + " "
+                + discussionComment.getCommenter().getLastName()
+                + ": " + Jsoup.clean(discussionComment.getContent(), "", Whitelist.none(),
                 new Document.OutputSettings().prettyPrint(false));
 
         Note note = createDataForDiscussionNotification(discussion, course, title, body);
@@ -82,13 +82,15 @@ public class DiscussionUtil {
 
         List<Person> recipients = new ArrayList<>(teachers);
 
-        for (Person commenter : commenters){
-            if (!recipients.contains(commenter))
+        for (Person commenter : commenters) {
+            if (!recipients.contains(commenter)) {
                 recipients.add(commenter);
+            }
         }
 
-        if (!recipients.contains(discussion.getCreator()))
+        if (!recipients.contains(discussion.getCreator())) {
             recipients.add(discussion.getCreator());
+        }
 
         firebaseUtil.sendMultipleNotification(note, recipients, "discussion comment");
     }

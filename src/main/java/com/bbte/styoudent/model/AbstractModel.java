@@ -18,10 +18,12 @@ public abstract class AbstractModel {
     }
 
     private void ensureUUID() {
-        if (uuid == null)
+        if (uuid == null) {
             setUUID(UUID.randomUUID().toString());
+        }
     }
 
+    @SuppressWarnings("PMD.UnusedPrivateMethod")
     @PrePersist
     private void prePersist() {
         ensureUUID();
@@ -32,10 +34,14 @@ public abstract class AbstractModel {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        AbstractModel that = (AbstractModel) o;
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null || getClass() != obj.getClass()) {
+            return false;
+        }
+        AbstractModel that = (AbstractModel) obj;
         return Objects.equals(getUuid(), that.getUuid());
     }
 

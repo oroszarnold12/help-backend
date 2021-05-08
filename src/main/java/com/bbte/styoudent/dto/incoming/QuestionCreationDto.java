@@ -1,7 +1,6 @@
 package com.bbte.styoudent.dto.incoming;
 
 import lombok.Data;
-import org.hibernate.validator.constraints.Length;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;

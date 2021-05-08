@@ -109,13 +109,13 @@ public class QuizSubmissionController {
             quizSubmission.setSubmitter(person);
             List<AnswerSubmission> answerSubmissions = new ArrayList<>();
 
-            quizSubmissionCreationDtos.forEach((quizSubmissionCreationDto -> {
+            quizSubmissionCreationDtos.forEach(quizSubmissionCreationDto -> {
                 AnswerSubmission answerSubmission = new AnswerSubmission();
                 answerSubmission.setPicked(quizSubmissionCreationDto.getPicked());
                 answerSubmission.setAnswer(quizUtil.getAnswer(quiz, quizSubmissionCreationDto.getAnswerId()));
                 answerSubmission.setQuizSubmission(quizSubmission);
                 answerSubmissions.add(answerSubmission);
-            }));
+            });
 
             quizSubmission.setAnswerSubmissions(answerSubmissions);
 

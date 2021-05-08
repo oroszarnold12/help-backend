@@ -95,14 +95,13 @@ public class CourseFileController {
             List<CourseFile> courseFiles = courseFileService.getByCourseId(courseId);
 
             if (courseFilesIds != null) {
-                courseFiles = courseFiles.stream().filter((courseFile ->
-                        courseFilesIds.contains(courseFile.getId().toString()))).collect(Collectors.toList());
+                courseFiles = courseFiles.stream().filter(courseFile ->
+                        courseFilesIds.contains(courseFile.getId().toString())).collect(Collectors.toList());
             }
 
             zipService.open();
 
-            courseFiles.forEach(courseFile ->
-            {
+            courseFiles.forEach(courseFile -> {
                 String fileName = courseFile.getFileName()
                         .replaceAll("\\s+", "_");
 
@@ -125,7 +124,7 @@ public class CourseFileController {
     @PreAuthorize("hasRole('TEACHER')")
     public ResponseEntity<List<CourseFileDto>> saveSubmission(
             @PathVariable(name = "courseId") Long courseId,
-            @RequestParam("files") @Size(min = 1, max = 5) MultipartFile[] files
+            @RequestParam("files") @Size(min = 1, max = 5) MultipartFile... files
     ) {
         log.debug("POST /courses/{}/files", courseId);
 

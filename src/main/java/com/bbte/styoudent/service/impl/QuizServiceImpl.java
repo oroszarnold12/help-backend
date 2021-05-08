@@ -1,6 +1,5 @@
 package com.bbte.styoudent.service.impl;
 
-import com.bbte.styoudent.model.Assignment;
 import com.bbte.styoudent.model.Quiz;
 import com.bbte.styoudent.repository.QuizRepository;
 import com.bbte.styoudent.service.QuizService;

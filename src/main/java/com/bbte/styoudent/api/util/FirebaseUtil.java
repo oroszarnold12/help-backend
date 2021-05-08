@@ -41,9 +41,9 @@ public class FirebaseUtil {
             }
         });
 
-        if (failedFor.size() > 0) {
+        if (!failedFor.isEmpty()) {
             throw new InternalServerException(
-                    "Could not send "+ entity +" notification for people: " + String.join(", ", failedFor)
+                    "Could not send " + entity + " notification for people: " + String.join(", ", failedFor)
             );
         }
     }

@@ -11,6 +11,6 @@ public class ServiceException extends RuntimeException {
     }
 
     public ServiceException() {
-
+        super();
     }
 }

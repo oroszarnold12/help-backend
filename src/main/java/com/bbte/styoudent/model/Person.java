@@ -12,6 +12,7 @@ import java.util.List;
 
 import static javax.persistence.FetchType.LAZY;
 
+@SuppressWarnings("PMD.TooManyFields")
 @Entity
 @Table(name = "person")
 @Data

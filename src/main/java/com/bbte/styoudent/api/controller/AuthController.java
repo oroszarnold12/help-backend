@@ -3,6 +3,7 @@ package com.bbte.styoudent.api.controller;
 import com.bbte.styoudent.api.assembler.PersonAssembler;
 import com.bbte.styoudent.api.exception.BadRequestException;
 import com.bbte.styoudent.api.exception.ConflictException;
+import com.bbte.styoudent.api.exception.InternalServerException;
 import com.bbte.styoudent.dto.incoming.PersonSignUpDto;
 import com.bbte.styoudent.dto.outgoing.ApiResponseMessage;
 import com.bbte.styoudent.dto.outgoing.PersonDto;
@@ -30,7 +31,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
@@ -59,7 +59,7 @@ public class AuthController {
         this.personAssembler = personAssembler;
     }
 
-    @PostMapping(value = "/login")
+    @PostMapping("/login")
     public ResponseEntity<PersonDto> login(@Valid @RequestBody LoginRequest loginRequest) {
         Authentication authentication;
         try {
@@ -83,39 +83,27 @@ public class AuthController {
 
     @GetMapping("/logout")
     public ResponseEntity<ApiResponseMessage> logout(HttpServletRequest request, HttpServletResponse response) {
-        if (SecurityContextHolder.getContext().getAuthentication() != null &&
-                SecurityContextHolder.getContext().getAuthentication().isAuthenticated() &&
-                !(SecurityContextHolder.getContext().getAuthentication()
-                        instanceof AnonymousAuthenticationToken)) {
+        if (SecurityContextHolder.getContext().getAuthentication() != null
+                && SecurityContextHolder.getContext().getAuthentication().isAuthenticated()
+                && !(SecurityContextHolder.getContext().getAuthentication() instanceof AnonymousAuthenticationToken)) {
             Person person = personService.getPersonByEmail(AuthUtil.getCurrentUsername());
             person.setNotificationToken(null);
 
             try {
                 personService.savePerson(person);
-            } catch (ServiceException ignored) {
+            } catch (ServiceException serviceException) {
+                throw new InternalServerException("Could not delete notification subscription!", serviceException);
             }
         }
-
 
         SecurityContextHolder.clearContext();
 
-        if (request.getCookies() != null) {
-            for (Cookie cookie : request.getCookies()) {
-                if (cookie.getName().equals(JwtTokenProvider.ACCESS_TOKEN_COOKIE_NAME)) {
-                    cookie.setMaxAge(0);
-                    cookie.setValue("");
-                    cookie.setHttpOnly(true);
-                    cookie.setPath("/");
-                    response.addCookie(cookie);
-                    break;
-                }
-            }
-        }
+        cookieUtil.deleteAccessTokenCookie(request, response);
 
         return ResponseEntity.ok().body(new ApiResponseMessage("The logout was successful."));
     }
 
-    @PostMapping(value = "/sign-up")
+    @PostMapping("/sign-up")
     public ResponseEntity<PersonDto> signUpPerson(@RequestBody @Valid PersonSignUpDto personSignUpDto) {
         Person person = personAssembler.signUpDtoToModel(personSignUpDto);
         person.setRole(Role.ROLE_STUDENT);

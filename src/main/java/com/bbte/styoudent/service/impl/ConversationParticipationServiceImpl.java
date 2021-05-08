@@ -13,16 +13,18 @@ import javax.transaction.Transactional;
 
 @Service
 public class ConversationParticipationServiceImpl implements ConversationParticipationService {
-    private final ConversationParticipationRepository conversationParticipationRepository;
+    private final ConversationParticipationRepository convPartRepository;
 
-    public ConversationParticipationServiceImpl(ConversationParticipationRepository conversationParticipationRepository) {
-        this.conversationParticipationRepository = conversationParticipationRepository;
+    public ConversationParticipationServiceImpl(
+            ConversationParticipationRepository convPartRepository
+    ) {
+        this.convPartRepository = convPartRepository;
     }
 
     @Override
     public boolean checkIfExistsByConversationIdAndPersonId(Long conversationId, Long personId) {
         try {
-            return conversationParticipationRepository.existsByConversationIdAndPersonId(conversationId, personId);
+            return convPartRepository.existsByConversationIdAndPersonId(conversationId, personId);
         } catch (DataAccessException dataAccessException) {
             throw new ServiceException("Conversation participation checking failed!", dataAccessException);
         }
@@ -35,7 +37,7 @@ public class ConversationParticipationServiceImpl implements ConversationPartici
             conversationParticipation.setConversation(conversation);
             conversationParticipation.setPerson(person);
 
-            conversationParticipationRepository.save(conversationParticipation);
+            convPartRepository.save(conversationParticipation);
         } catch (DataAccessException dataAccessException) {
             throw new ServiceException("Conversation participation insertion failed!", dataAccessException);
         }
@@ -45,7 +47,7 @@ public class ConversationParticipationServiceImpl implements ConversationPartici
     @Override
     public void deleteParticipationByParticipantId(Long participantId) {
         try {
-            conversationParticipationRepository.deleteByPersonId(participantId);
+            convPartRepository.deleteByPersonId(participantId);
         } catch (DataAccessException dataAccessException) {
             throw new ServiceException("Conversation participation deletion failed!", dataAccessException);
         }

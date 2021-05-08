@@ -13,6 +13,7 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 @Component
@@ -58,7 +59,7 @@ public class ConversationUtil {
             }
         }
 
-        if (failed.size() > 0) {
+        if (!failed.isEmpty()) {
             throw new BadRequestException(
                     "Persons with emails: " + String.join(", ", failed) + " does not exists!"
             );
@@ -78,7 +79,7 @@ public class ConversationUtil {
             }
         });
 
-        if (failed.size() > 0) {
+        if (!failed.isEmpty()) {
             throw new InternalServerException(
                     "Could not add persons: " + String.join(", ", failed) + "!"
             );
@@ -133,25 +134,31 @@ public class ConversationUtil {
 
     public void createMultipleNotificationsOfMessageCreation(ConversationMessage conversationMessage) {
         Conversation conversation = conversationMessage.getConversation();
-        String title = conversation.getName() != null ? conversation.getName() : "New message!";
-        String body = conversationMessage.getCreator().getFirstName() + " " +
-                conversationMessage.getCreator().getLastName() + ": " +
-                conversationMessage.getContent();
+        String title = conversation.getName();
+        if (title == null) {
+            title = "New message!";
+        }
+
+        String body = conversationMessage.getCreator().getFirstName() + " "
+                + conversationMessage.getCreator().getLastName() + ": "
+                + conversationMessage.getContent();
 
         Note note = createDataForMessageNotification(title, body);
 
-        List<Person> participants =
-                conversation.getConversationParticipations() != null ?
-                        conversation.getConversationParticipations().stream().map(ConversationParticipation::getPerson)
-                                .filter(person -> !person.getId().equals(conversationMessage.getCreator().getId()))
-                                .collect(Collectors.toList())
-                        : Collections.emptyList();
+        List<ConversationParticipation> participations = conversation.getConversationParticipations();
+        List<Person> participants = Collections.emptyList();
+
+        if (participations != null) {
+            participants = participations.stream().map(ConversationParticipation::getPerson)
+                    .filter(person -> !person.getId().equals(conversationMessage.getCreator().getId()))
+                    .collect(Collectors.toList());
+        }
 
         firebaseUtil.sendMultipleNotification(note, participants, "chat");
     }
 
     private Note createDataForMessageNotification(String title, String body) {
-        Map<String, String> data = new HashMap<>();
+        Map<String, String> data = new ConcurrentHashMap<>();
         data.put("forChat", "true");
 
         return new Note(title, body, data);

@@ -1,6 +1,5 @@
 package com.bbte.styoudent.service.impl;
 
-import com.bbte.styoudent.model.AssignmentGrade;
 import com.bbte.styoudent.model.Person;
 import com.bbte.styoudent.model.QuizGrade;
 import com.bbte.styoudent.repository.QuizGradeRepository;
@@ -36,7 +35,6 @@ public class QuizGradeServiceImpl implements QuizGradeService {
             throw new ServiceException("Quiz grade selection failed!", de);
         }
     }
-
 
     @Override
     public boolean checkIfExistsByQuizIdAndSubmitter(Long quizId, Person submitter) {

@@ -18,7 +18,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -30,6 +29,7 @@ public class JwtTokenProvider {
     @Value("${styoudent.config.secret.key}")
     private String secret;
 
+    @SuppressWarnings("PMD.UnusedPrivateMethod")
     @PostConstruct
     private void setSecretKey() {
         KEY = Keys.hmacShaKeyFor(secret.getBytes());
@@ -63,18 +63,21 @@ public class JwtTokenProvider {
         Claims claims = Jwts.claims().setSubject(user.getUsername());
 
         claims.put(ACCESS_TOKEN_COOKIE_NAME, user.getAuthorities().stream()
-        .map(s -> new SimpleGrantedAuthority(s.getAuthority())).filter(Objects::nonNull).collect(Collectors.toList()));
+                .map(grantedAuthority -> new SimpleGrantedAuthority(grantedAuthority.getAuthority()))
+                .collect(Collectors.toList()));
 
         Date now = new Date();
-        Long duration = now.getTime() + EXPIRATION_TIME;
-        Date expiryDate = new Date(now.getTime() + EXPIRATION_TIME);
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(now);
         calendar.add(Calendar.HOUR_OF_DAY, 8);
 
-        String jwt = Jwts.builder().setClaims(claims).setSubject(user.getUsername()).setIssuedAt(new Date(System.currentTimeMillis()))
+        String jwt = Jwts.builder().setClaims(claims).setSubject(user.getUsername())
+                .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
                 .signWith(KEY).compact();
+
+        Long duration = now.getTime() + EXPIRATION_TIME;
+        Date expiryDate = new Date(now.getTime() + EXPIRATION_TIME);
 
         Token token = new Token();
         token.setTokenType(Token.TokenType.ACCESS);
@@ -87,6 +90,6 @@ public class JwtTokenProvider {
 
     public Boolean validateSubjectAndExpirationOfToken(Claims claims, UserDetails userDetails) {
         final String username = extractUsername(claims);
-        return (username.equals(userDetails.getUsername()) && !isTokenExpired(claims));
+        return username.equals(userDetails.getUsername()) && !isTokenExpired(claims);
     }
 }

@@ -85,8 +85,8 @@ public class ConversationMessageController {
         ConversationMessage conversationMessage =
                 conversationUtil.getConversationMessageIfExists(conversationId, messageId);
 
-        if (!conversationMessage.getCreator().equals(person) ||
-                !conversationUtil.checkIfParticipates(conversationId, person.getId())) {
+        if (!conversationMessage.getCreator().equals(person)
+                || !conversationUtil.checkIfParticipates(conversationId, person.getId())) {
             throw new ForbiddenException("Access denied!");
         }
 

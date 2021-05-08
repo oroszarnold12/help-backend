@@ -63,7 +63,7 @@ public class CourseController {
         }
     }
 
-    @GetMapping(value = "/{id}")
+    @GetMapping("/{id}")
     @PreAuthorize("hasRole('STUDENT') or hasRole('TEACHER')")
     public ResponseEntity<CourseDto> getCourse(@PathVariable(name = "id") Long id) {
         log.debug("GET /courses/{}", id);
@@ -133,16 +133,15 @@ public class CourseController {
         log.debug("DELETE /courses/{}", id);
 
         Person person = personService.getPersonByEmail(AuthUtil.getCurrentUsername());
-        Long teacherId;
 
         try {
-            teacherId = courseService.getById(id).getTeacher().getId();
+            Long teacherId = courseService.getById(id).getTeacher().getId();
+
+            if (!teacherId.equals(person.getId())) {
+                throw new ForbiddenException("Access denied!");
+            }
         } catch (ServiceException se) {
             throw new BadRequestException("Course with id: " + id + " doesn't exists!", se);
-        }
-
-        if (!teacherId.equals(person.getId())) {
-            throw new ForbiddenException("Access denied!");
         }
 
         try {

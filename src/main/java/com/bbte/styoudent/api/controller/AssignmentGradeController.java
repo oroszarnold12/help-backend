@@ -62,8 +62,8 @@ public class AssignmentGradeController {
 
         try {
             if (person.getRole().equals(Role.ROLE_STUDENT)) {
-                return ResponseEntity.ok(assignmentGradeService.getByAssignmentIdAndBySubmitter(assignmentId, person).stream()
-                        .map(gradeAssembler::modelToDto)
+                return ResponseEntity.ok(assignmentGradeService.getByAssignmentIdAndBySubmitter(assignmentId, person)
+                        .stream().map(gradeAssembler::modelToDto)
                         .collect(Collectors.toList()));
             } else {
                 return ResponseEntity.ok(assignmentGradeService.getByAssignmentId(assignmentId).stream()
@@ -95,7 +95,8 @@ public class AssignmentGradeController {
             AssignmentGrade assignmentGrade;
 
             if (assignmentUtil.checkIfGraded(assignment.getId(), submitter)) {
-                assignmentGrade = assignmentGradeService.getByAssignmentIdAndBySubmitter(assignmentId, submitter).get(0);
+                assignmentGrade = assignmentGradeService.getByAssignmentIdAndBySubmitter(assignmentId, submitter)
+                        .get(0);
                 assignmentGrade.setGrade(gradeCreationDto.getGrade());
             } else {
                 assignmentGrade = new AssignmentGrade();

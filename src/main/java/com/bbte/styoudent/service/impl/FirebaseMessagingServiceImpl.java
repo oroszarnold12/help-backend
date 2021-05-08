@@ -17,6 +17,7 @@ public class FirebaseMessagingServiceImpl implements FirebaseMessagingService {
         this.firebaseMessaging = firebaseMessaging;
     }
 
+    @Override
     public void sendNotification(Note note, String token) {
         Notification notification = Notification
                 .builder()

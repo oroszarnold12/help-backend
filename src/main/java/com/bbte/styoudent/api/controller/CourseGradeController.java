@@ -13,6 +13,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 @CrossOrigin
 @Slf4j
@@ -59,7 +60,9 @@ public class CourseGradeController {
                 }
             }));
 
-            Map<String, List<?>> grades = new HashMap<>(Collections.singletonMap("assignmentGrades", assignmentGrades));
+            Map<String, List<?>> grades = new ConcurrentHashMap<>(
+                    Collections.singletonMap("assignmentGrades", assignmentGrades)
+            );
             grades.put("quizGrades", quizGrades);
 
             return ResponseEntity.ok(grades);

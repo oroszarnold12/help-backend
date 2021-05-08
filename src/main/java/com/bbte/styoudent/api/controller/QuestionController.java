@@ -85,7 +85,7 @@ public class QuestionController {
             Question question = questionAssembler.creationDtoToModel(questionCreationDto);
             question.setQuiz(quiz);
 
-            question.getAnswers().forEach((answer -> answer.setQuestion(question)));
+            question.getAnswers().forEach(answer -> answer.setQuestion(question));
 
             quiz.setPoints(quiz.getPoints() + question.getPoints());
 
@@ -116,7 +116,7 @@ public class QuestionController {
             Question question = questionAssembler.creationDtoToModel(questionCreationDto);
             question.setId(questionId);
             question.setQuiz(quiz);
-            question.getAnswers().forEach((answer -> answer.setQuestion(question)));
+            question.getAnswers().forEach(answer -> answer.setQuestion(question));
 
             try {
                 Question question1 = questionService.getByQuizIdAndId(quizId, questionId);

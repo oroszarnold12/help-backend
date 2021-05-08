@@ -48,7 +48,7 @@ public class AssignmentController {
         this.assignmentUtil = assignmentUtil;
     }
 
-    @GetMapping(value = "{assignmentId}")
+    @GetMapping("{assignmentId}")
     @PreAuthorize("hasRole('STUDENT') or hasRole('TEACHER')")
     public ResponseEntity<AssignmentDto> getAssignment(@PathVariable(name = "courseId") Long courseId,
                                                        @PathVariable(name = "assignmentId") Long assignmentId) {
@@ -63,8 +63,8 @@ public class AssignmentController {
             if (person.getRole().equals(Role.ROLE_STUDENT)) {
                 assignmentUtil.checkIfPublished(courseId, assignmentId);
 
-                assignment.setComments(assignment.getComments().stream().filter((
-                        assignmentComment -> assignmentComment.getRecipient().equals(person))
+                assignment.setComments(assignment.getComments().stream().filter(
+                        assignmentComment -> assignmentComment.getRecipient().equals(person)
                 ).collect(Collectors.toList()));
             }
 
@@ -123,7 +123,6 @@ public class AssignmentController {
             assignment = assignmentService.save(assignment);
 
             assignmentUtil.createMultipleNotificationsOfAssignmentCreation(assignment);
-
 
             return ResponseEntity.ok(assignmentAssembler.modelToDto(assignment));
         } catch (ServiceException se) {

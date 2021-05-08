@@ -30,7 +30,7 @@ public class ParticipationServiceImpl implements ParticipationService {
     }
 
     @Override
-    public void deleteParticipationsByCourse(Course course) throws ServiceException {
+    public void deleteParticipationsByCourse(Course course) {
         try {
             participationRepository.deleteParticipationsByCourse(course);
         } catch (DataAccessException de) {
@@ -78,7 +78,6 @@ public class ParticipationServiceImpl implements ParticipationService {
         try {
             participationRepository.deleteByPersonIdAndCourseId(participantId, courseId);
         } catch (DataAccessException dataAccessException) {
-            dataAccessException.printStackTrace();
             throw new ServiceException("Participation deletion failed!");
         }
     }

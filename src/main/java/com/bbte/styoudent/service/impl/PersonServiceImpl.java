@@ -8,7 +8,6 @@ import com.bbte.styoudent.service.ServiceException;
 import org.springframework.dao.DataAccessException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -23,14 +22,14 @@ public class PersonServiceImpl implements PersonService {
     }
 
     @Override
-    public Person getPersonByEmail(String email) throws ServiceException {
+    public Person getPersonByEmail(String email) {
         return personRepository.findPersonByEmail(email).orElseThrow(
                 () -> new ServiceException("Person not found!")
         );
     }
 
     @Override
-    public Person savePerson(Person person) throws ServiceException {
+    public Person savePerson(Person person) {
         try {
             return personRepository.save(person);
         } catch (DataAccessException de) {

@@ -1,6 +1,5 @@
 package com.bbte.styoudent.api.assembler;
 
-import com.bbte.styoudent.dto.incoming.AssignmentCommentCreationDto;
 import com.bbte.styoudent.dto.outgoing.AssignmentCommentDto;
 import com.bbte.styoudent.model.AssignmentComment;
 import org.modelmapper.ModelMapper;

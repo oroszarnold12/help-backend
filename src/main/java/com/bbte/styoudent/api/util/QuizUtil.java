@@ -11,9 +11,9 @@ import com.bbte.styoudent.service.ServiceException;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -139,7 +139,7 @@ public class QuizUtil {
     }
 
     private Note createDataForQuizNotification(Quiz quiz, Course course, String title, String body) {
-        Map<String, String> data = new HashMap<>();
+        Map<String, String> data = new ConcurrentHashMap<>();
         data.put("forQuiz", "true");
         data.put("courseId", course.getId().toString());
         data.put("quizId", quiz.getId().toString());

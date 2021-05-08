@@ -44,7 +44,7 @@ public class AnnouncementController {
         this.announcementUtil = announcementUtil;
     }
 
-    @GetMapping(value = "{announcementId}")
+    @GetMapping("{announcementId}")
     @PreAuthorize("hasRole('STUDENT') or hasRole('TEACHER')")
     public ResponseEntity<AnnouncementDto> getAnnouncement(@PathVariable(name = "courseId") Long courseId,
                                                            @PathVariable(name = "announcementId") Long announcementId) {
@@ -125,7 +125,7 @@ public class AnnouncementController {
         announcementUtil.checkIfHasThisAnnouncement(courseId, announcementId);
 
         try {
-           announcementService.delete(announcementId);
+            announcementService.delete(announcementId);
 
             return ResponseEntity.noContent().build();
         } catch (ServiceException se) {

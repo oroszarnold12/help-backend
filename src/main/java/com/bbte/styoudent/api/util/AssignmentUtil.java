@@ -8,9 +8,9 @@ import com.bbte.styoudent.service.AssignmentService;
 import com.bbte.styoudent.service.ServiceException;
 import org.springframework.stereotype.Component;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
@@ -60,16 +60,16 @@ public class AssignmentUtil {
     }
 
     public String getCorrectedFileName(List<AssignmentSubmission> submissions, String oldFileName) {
-        List<AssignmentSubmissionFile> files = submissions.stream().map(AssignmentSubmission::getFiles).
-                flatMap(List::stream).collect(Collectors.toList());
+        List<AssignmentSubmissionFile> files = submissions.stream().map(AssignmentSubmission::getFiles)
+                .flatMap(List::stream).collect(Collectors.toList());
 
         int i = 1;
         final AtomicReference<String> newFileName = new AtomicReference<>();
         newFileName.set(oldFileName);
         while (files.stream().anyMatch((file) -> file.getFileName().equals(newFileName.get()))) {
-            int at = oldFileName.lastIndexOf(".");
+            int index = oldFileName.lastIndexOf('.');
             String toAppend = "-" + i;
-            newFileName.set(oldFileName.substring(0, at) + toAppend + oldFileName.substring(at));
+            newFileName.set(oldFileName.substring(0, index) + toAppend + oldFileName.substring(index));
             i++;
         }
 
@@ -122,9 +122,9 @@ public class AssignmentUtil {
         Assignment assignment = assignmentComment.getAssignment();
         Course course = assignment.getCourse();
         String title = "New comment for: " + assignment.getName();
-        String body = assignmentComment.getCommenter().getFirstName() + " " +
-                assignmentComment.getCommenter().getLastName() +
-                ": " + assignmentComment.getContent();
+        String body = assignmentComment.getCommenter().getFirstName() + " "
+                + assignmentComment.getCommenter().getLastName()
+                + ": " + assignmentComment.getContent();
 
         Note note = createDataForAssignmentSubmissionNotification(assignment, course, title, body);
 
@@ -141,17 +141,19 @@ public class AssignmentUtil {
         Assignment assignment = assignmentComment.getAssignment();
         Course course = assignment.getCourse();
         String title = "New comment for " + assignment.getName();
-        String body = recipient.getFirstName() +
-                " " + recipient.getLastName() +
-                ": " + assignmentComment.getContent();
+        String body = recipient.getFirstName()
+                + " " + recipient.getLastName()
+                + ": " + assignmentComment.getContent();
 
         Note note = createDataForAssignmentNotification(assignment, course, title, body);
 
         firebaseUtil.sendNotification(note, recipient, "assignment submission comment");
     }
 
-    private Note createDataForAssignmentSubmissionNotification(Assignment assignment, Course course, String title, String body) {
-        Map<String, String> data = new HashMap<>();
+    private Note createDataForAssignmentSubmissionNotification(
+            Assignment assignment, Course course, String title, String body
+    ) {
+        Map<String, String> data = new ConcurrentHashMap<>();
         data.put("forAssignmentSubmission", "true");
         data.put("courseId", course.getId().toString());
         data.put("assignmentId", assignment.getId().toString());
@@ -160,7 +162,7 @@ public class AssignmentUtil {
     }
 
     private Note createDataForAssignmentNotification(Assignment assignment, Course course, String title, String body) {
-        Map<String, String> data = new HashMap<>();
+        Map<String, String> data = new ConcurrentHashMap<>();
         data.put("forAssignment", "true");
         data.put("courseId", course.getId().toString());
         data.put("assignmentId", assignment.getId().toString());

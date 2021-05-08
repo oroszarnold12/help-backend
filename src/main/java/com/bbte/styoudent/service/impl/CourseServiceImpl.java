@@ -32,14 +32,14 @@ public class CourseServiceImpl implements CourseService {
     }
 
     @Override
-    public Course getById(Long id) throws ServiceException {
+    public Course getById(Long id) {
         return courseRepository.findById(id).orElseThrow(
                 () -> new ServiceException("Course selection with id: " + id + " failed!")
         );
     }
 
     @Override
-    public Course save(Course course) throws ServiceException {
+    public Course save(Course course) {
         try {
             return courseRepository.save(course);
         } catch (DataAccessException de) {
@@ -49,7 +49,7 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     @Transactional
-    public void delete(Long id) throws ServiceException {
+    public void delete(Long id) {
         try {
             Course course = getById(id);
             participationService.deleteParticipationsByCourse(course);
@@ -60,7 +60,7 @@ public class CourseServiceImpl implements CourseService {
     }
 
     @Override
-    public List<Course> getAllCoursesByPerson(Person person) throws ServiceException {
+    public List<Course> getAllCoursesByPerson(Person person) {
         try {
             return courseRepository.findAllByPerson(person);
         } catch (DataAccessException de) {
@@ -69,7 +69,7 @@ public class CourseServiceImpl implements CourseService {
     }
 
     @Override
-    public Course getCourseByPerson(Person person, Long id) throws ServiceException {
+    public Course getCourseByPerson(Person person, Long id) {
         return courseRepository.findByPerson(person, id).orElseThrow(
                 () -> new ServiceException("Course selection with id " + id + " failed!"));
     }

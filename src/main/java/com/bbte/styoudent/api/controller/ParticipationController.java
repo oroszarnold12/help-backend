@@ -3,7 +3,6 @@ package com.bbte.styoudent.api.controller;
 import com.bbte.styoudent.api.assembler.ParticipationAssembler;
 import com.bbte.styoudent.api.exception.BadRequestException;
 import com.bbte.styoudent.api.exception.InternalServerException;
-import com.bbte.styoudent.dto.incoming.CourseCreationDto;
 import com.bbte.styoudent.dto.incoming.ParticipationCreationDto;
 import com.bbte.styoudent.dto.outgoing.ParticipationDto;
 import com.bbte.styoudent.model.Participation;

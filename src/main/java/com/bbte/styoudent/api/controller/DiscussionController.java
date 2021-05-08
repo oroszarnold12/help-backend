@@ -46,7 +46,7 @@ public class DiscussionController {
         this.participationUtil = participationUtil;
     }
 
-    @GetMapping(value = "{discussionId}")
+    @GetMapping("{discussionId}")
     @PreAuthorize("hasRole('STUDENT') or hasRole('TEACHER')")
     public ResponseEntity<DiscussionDto> getDiscussions(@PathVariable(name = "courseId") Long courseId,
                                                         @PathVariable(name = "discussionId") Long discussionId) {

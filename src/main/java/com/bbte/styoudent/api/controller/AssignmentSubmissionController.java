@@ -73,7 +73,8 @@ public class AssignmentSubmissionController {
             if (person.getRole().equals(Role.ROLE_STUDENT)) {
                 assignmentUtil.checkIfPublished(courseId, assignmentId);
 
-                return ResponseEntity.ok(assignmentSubmissionService.getByAssignmentIdAndBySubmitter(assignmentId, person)
+                return ResponseEntity.ok(assignmentSubmissionService
+                        .getByAssignmentIdAndBySubmitter(assignmentId, person)
                         .stream().map(submissionAssembler::modelToDto)
                         .collect(Collectors.toList()));
             } else {
@@ -100,19 +101,17 @@ public class AssignmentSubmissionController {
         assignmentUtil.checkIfHasThisAssignment(courseId, assignmentId);
 
         try {
-            List<AssignmentSubmission> assignmentSubmissions = assignmentSubmissionService.
-                    getByAssignmentId(assignmentId);
+            List<AssignmentSubmission> assignmentSubmissions = assignmentSubmissionService
+                    .getByAssignmentId(assignmentId);
 
             zipService.open();
 
             assignmentSubmissions.forEach(assignmentSubmission ->
                     assignmentSubmission.getFiles().forEach(assignmentSubmissionFile -> {
-                        String fileName = (assignmentSubmission.getSubmitter().getFirstName() +
-                                " " +
-                                assignmentSubmission.getSubmitter().getLastName() +
-                                "/" +
-                                assignmentSubmissionFile.getFileName())
-                                        .replaceAll("\\s+", "_");
+                        String fileName = (assignmentSubmission.getSubmitter().getFirstName()
+                                + " " + assignmentSubmission.getSubmitter().getLastName()
+                                + "/" + assignmentSubmissionFile.getFileName())
+                                .replaceAll("\\s+", "_");
 
                         zipService.write(fileName, assignmentSubmissionFile.getFileObject().getBytes());
                     }));
@@ -145,22 +144,23 @@ public class AssignmentSubmissionController {
         assignmentUtil.checkIfHasThisAssignment(courseId, assignmentId);
 
         try {
-            AssignmentSubmission assignmentSubmission = assignmentSubmissionService.getByAssignmentIdAndId(assignmentId, submissionId);
+            AssignmentSubmission assignmentSubmission = assignmentSubmissionService
+                    .getByAssignmentIdAndId(assignmentId, submissionId);
 
             if (person.getRole().equals(Role.ROLE_STUDENT) && !assignmentSubmission.getSubmitter().equals(person)) {
                 throw new ForbiddenException("Access denied!");
             }
 
-            AssignmentSubmissionFile assignmentSubmissionFile = assignmentSubmission.getFiles().stream().filter((file) ->
-                    file.getId().equals(fileId)).findFirst().orElseThrow(() ->
-                    new BadRequestException("Assignment submission has no file with id:" + fileId + "!"));
+            AssignmentSubmissionFile assignmentSubmissionFile = assignmentSubmission.getFiles()
+                    .stream().filter((file) ->
+                            file.getId().equals(fileId)).findFirst().orElseThrow(() ->
+                            new BadRequestException("Assignment submission has no file with id:" + fileId + "!"));
 
             return ResponseEntity.ok()
                     .body(
                             new ByteArrayResource(assignmentSubmissionFile.getFileObject().getBytes())
                     );
         } catch (ServiceException se) {
-            se.printStackTrace();
             throw new InternalServerException("Could not GET submission file!", se);
         }
     }
@@ -171,7 +171,7 @@ public class AssignmentSubmissionController {
     public ResponseEntity<AssignmentSubmissionDto> saveSubmission(
             @PathVariable(name = "courseId") Long courseId,
             @PathVariable(name = "assignmentId") Long assignmentId,
-            @RequestParam("files") @Size(min = 1, max = 5) MultipartFile[] files
+            @RequestParam("files") @Size(min = 1, max = 5) MultipartFile... files
     ) {
         log.debug("POST /courses/{}/assignments/{}/submissions", courseId, assignmentId);
 

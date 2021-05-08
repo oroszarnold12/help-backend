@@ -86,8 +86,8 @@ public class ParticipantController {
 
             return ResponseEntity.noContent().build();
         } catch (ServiceException serviceException) {
-            throw new BadRequestException("Course with id: " + courseId +
-                    " has no participant with id: " + participantId + "!", serviceException);
+            throw new BadRequestException("Course with id: " + courseId
+                    + " has no participant with id: " + participantId + "!", serviceException);
         }
     }
 }

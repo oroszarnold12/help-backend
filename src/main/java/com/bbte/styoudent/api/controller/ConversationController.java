@@ -69,11 +69,11 @@ public class ConversationController {
         Person person = personService.getPersonByEmail(AuthUtil.getCurrentUsername());
 
         try {
-            Conversation conversation = conversationService.getById(conversationId);
-
             if (!conversationUtil.checkIfParticipates(conversationId, person.getId())) {
                 throw new ForbiddenException("Access denied!");
             }
+
+            Conversation conversation = conversationService.getById(conversationId);
 
             return ResponseEntity.ok(
                     conversationAssembler.modelToDto(conversation)
@@ -93,8 +93,8 @@ public class ConversationController {
         Person person = personService.getPersonByEmail(AuthUtil.getCurrentUsername());
         List<Person> participants = conversationUtil.getPersonsFromEmails(conversationCreationDto.getEmails(), person);
 
-        if (participants.size() > 2 &&
-                (conversationCreationDto.getName() == null || conversationCreationDto.getName().isBlank())) {
+        if (participants.size() > 2
+                && (conversationCreationDto.getName() == null || conversationCreationDto.getName().isBlank())) {
             throw new BadRequestException("Group conversation should have a name!");
         }
 

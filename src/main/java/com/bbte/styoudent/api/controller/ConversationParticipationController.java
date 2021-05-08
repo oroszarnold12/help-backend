@@ -1,6 +1,5 @@
 package com.bbte.styoudent.api.controller;
 
-
 import com.bbte.styoudent.api.assembler.ConversationAssembler;
 import com.bbte.styoudent.api.exception.BadRequestException;
 import com.bbte.styoudent.api.exception.InternalServerException;

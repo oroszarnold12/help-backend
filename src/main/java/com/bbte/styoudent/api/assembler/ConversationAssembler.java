@@ -5,9 +5,11 @@ import com.bbte.styoudent.dto.outgoing.conversation.ConversationMessageDto;
 import com.bbte.styoudent.dto.outgoing.conversation.ThinConversationDto;
 import com.bbte.styoudent.model.conversation.Conversation;
 import com.bbte.styoudent.model.conversation.ConversationMessage;
+import com.bbte.styoudent.model.conversation.ConversationParticipation;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
@@ -25,11 +27,13 @@ public class ConversationAssembler {
 
         ThinConversationDto thinConversationDto = modelMapper.map(conversation, ThinConversationDto.class);
 
-        thinConversationDto.setParticipants(conversation.getConversationParticipations() != null ?
-                conversation.getConversationParticipations().stream().map(conversationParticipation ->
-                        personAssembler.modelToThinDto(conversationParticipation.getPerson()))
-                        .collect(Collectors.toList())
-                : null);
+        List<ConversationParticipation> participations = conversation.getConversationParticipations();
+
+        if (participations != null) {
+            thinConversationDto.setParticipants(participations.stream().map(conversationParticipation ->
+                    personAssembler.modelToThinDto(conversationParticipation.getPerson()))
+                    .collect(Collectors.toList()));
+        }
 
         if (conversation.getMessages().size() > 0) {
             thinConversationDto.setLastMessage(messageModelToDto(
@@ -45,11 +49,14 @@ public class ConversationAssembler {
 
         ConversationDto conversationDto = modelMapper.map(conversation, ConversationDto.class);
 
-        conversationDto.setParticipants(conversation.getConversationParticipations() != null ?
-                conversation.getConversationParticipations().stream().map(conversationParticipation ->
-                        personAssembler.modelToThinDto(conversationParticipation.getPerson()))
-                        .collect(Collectors.toList())
-                : null);
+        List<ConversationParticipation> participations = conversation.getConversationParticipations();
+
+        if (participations != null) {
+            conversationDto.setParticipants(participations.stream().map(conversationParticipation ->
+                    personAssembler.modelToThinDto(conversationParticipation.getPerson()))
+                    .collect(Collectors.toList()));
+        }
+
         return conversationDto;
     }
 
@@ -60,8 +67,10 @@ public class ConversationAssembler {
     private void sortMessages(Conversation conversation) {
         if (conversation.getMessages() != null) {
             conversation.getMessages().sort((conversationMessage1, conversationMessage2) -> {
-                if (conversationMessage1.getCreationDate() == null || conversationMessage2.getCreationDate() == null)
+                if (conversationMessage1.getCreationDate() == null || conversationMessage2.getCreationDate() == null) {
                     return 0;
+                }
+
                 return conversationMessage1.getCreationDate().compareTo(conversationMessage2.getCreationDate());
             });
         }

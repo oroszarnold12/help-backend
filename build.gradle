@@ -4,6 +4,8 @@ plugins {
     id 'java'
 }
 
+apply from: 'lint.gradle'
+
 group = 'com.bbte'
 version = '0.0.1-SNAPSHOT'
 sourceCompatibility = '11'
@@ -30,6 +32,7 @@ dependencies {
     annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
     compileOnly 'org.projectlombok:lombok'
     runtimeOnly 'org.postgresql:postgresql'
+    runtimeOnly 'mysql:mysql-connector-java'
     annotationProcessor 'org.projectlombok:lombok'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     compile 'org.modelmapper:modelmapper:2.3.8'

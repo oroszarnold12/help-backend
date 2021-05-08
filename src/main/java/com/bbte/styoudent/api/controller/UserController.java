@@ -82,37 +82,33 @@ public class UserController {
     }
 
     @Transactional
-    @GetMapping(value = "/image")
+    @GetMapping("/image")
     @PreAuthorize("hasRole('TEACHER') or hasRole('ADMIN') or hasRole('STUDENT')")
     public Resource downloadImage() {
         log.debug("GET /user/image");
 
         Person person = personService.getPersonByEmail(AuthUtil.getCurrentUsername());
 
-        return (person.getImage() == null || person.getImage().getBytes() == null) ?
-                null :
-                new ByteArrayResource(
-                        person.getImage().getBytes()
-                );
+        return person.getImage() == null || person.getImage().getBytes() == null
+                ? null
+                : new ByteArrayResource(person.getImage().getBytes());
     }
 
     @Transactional
-    @GetMapping(value = "{userId}/image")
+    @GetMapping("{userId}/image")
     @PreAuthorize("hasRole('TEACHER') or hasRole('ADMIN') or hasRole('STUDENT')")
     public Resource downloadImage(@PathVariable("userId") Long userId) {
         log.debug("GET /user/{}/image", userId);
 
         Person person = personService.getPersonById(userId);
 
-        return (person.getImage() == null || person.getImage().getBytes() == null) ?
-                null :
-                new ByteArrayResource(
-                        person.getImage().getBytes()
-                );
+        return person.getImage() == null || person.getImage().getBytes() == null
+                ? null
+                : new ByteArrayResource(person.getImage().getBytes());
     }
 
     @Transactional
-    @DeleteMapping(value = "/image")
+    @DeleteMapping("/image")
     @PreAuthorize("hasRole('TEACHER') or hasRole('ADMIN') or hasRole('STUDENT')")
     public void removeImage() {
         log.debug("DELETE /user/image");

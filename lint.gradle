@@ -1,0 +1,61 @@
+// Ez a példa statikus kódellenőrzők használatát mutatja be.
+
+buildscript {
+    repositories {
+        maven { url 'https://oss.sonatype.org/content/repositories/snapshots/' }
+        maven { url 'https://plugins.gradle.org/m2/' }
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath group: 'gradle.plugin.com.github.spotbugs.snom', name: 'spotbugs-gradle-plugin', version: '4.5.1'
+        classpath group: 'se.bjurr.violations', name: 'violations-gradle-plugin', version: '1.37'
+    }
+}
+
+apply plugin: CheckstylePlugin
+apply plugin: PmdPlugin
+apply plugin: com.github.spotbugs.snom.SpotBugsPlugin
+apply plugin: se.bjurr.violations.gradle.plugin.ViolationsGradlePlugin
+
+def configDir = buildscript.sourceFile.parentFile
+
+checkstyle {
+    toolVersion = '8.26'
+    ignoreFailures = true
+    configFile = file("${configDir}/checkstyle.xml")
+}
+
+spotbugs {
+    toolVersion = '4.1.1'
+    ignoreFailures = true
+    effort = 'max'
+    reportLevel = 'low'
+    excludeFilter = file("${configDir}/spotbugs-filter.xml")
+}
+
+pmd {
+    toolVersion = '6.17.0'
+    ignoreFailures = true
+    ruleSetFiles = files("${configDir}/pmd-ruleset.xml")
+    ruleSets = []
+    rulePriority = 5
+    try { incrementalAnalysis = true } catch(def e) {}
+}
+
+task violations(type: se.bjurr.violations.gradle.plugin.ViolationsTask) {
+    maxRuleColumnWidth = 25
+    maxMessageColumnWidth = 80
+
+    minSeverity = 'INFO' // INFO, WARN or ERROR
+    detailLevel = 'VERBOSE' // PER_FILE_COMPACT, COMPACT or VERBOSE
+    maxViolations = 0 // Will fail the build if total number of found violations is higher
+
+    violations = [
+            ["FINDBUGS",   buildDir.path, ".*/spotbugs/.*\\.xml\$",   "SpotBugs"],
+            ["PMD",        buildDir.path, ".*/pmd/.*\\.xml\$",        "PMD"],
+            ["CHECKSTYLE", buildDir.path, ".*/checkstyle/.*\\.xml\$", "Checkstyle"]
+    ]
+}
+
+check.finalizedBy violations

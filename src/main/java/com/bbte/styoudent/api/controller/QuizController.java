@@ -43,7 +43,7 @@ public class QuizController {
         this.quizUtil = quizUtil;
     }
 
-    @GetMapping(value = "{quizId}")
+    @GetMapping("{quizId}")
     @PreAuthorize("hasRole('STUDENT') or hasRole('TEACHER')")
     public ResponseEntity<QuizDto> getQuiz(@PathVariable(name = "courseId") Long courseId,
                                            @PathVariable(name = "quizId") Long quizId) {
