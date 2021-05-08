@@ -7,4 +7,5 @@ test:
   stage: test
 
   script:
+    - chmod +x ./gradlew
     - ./gradlew check
