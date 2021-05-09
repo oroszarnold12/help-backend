@@ -2,13 +2,10 @@ package com.bbte.styoudent.api.controller;
 
 import com.bbte.styoudent.api.assembler.PersonAssembler;
 import com.bbte.styoudent.api.exception.BadRequestException;
-import com.bbte.styoudent.api.exception.ConflictException;
 import com.bbte.styoudent.api.exception.InternalServerException;
-import com.bbte.styoudent.dto.incoming.PersonSignUpDto;
 import com.bbte.styoudent.dto.outgoing.ApiResponseMessage;
 import com.bbte.styoudent.dto.outgoing.PersonDto;
 import com.bbte.styoudent.model.Person;
-import com.bbte.styoudent.model.Role;
 import com.bbte.styoudent.security.authentication.LoginRequest;
 import com.bbte.styoudent.security.authentication.Token;
 import com.bbte.styoudent.security.util.AuthUtil;
@@ -19,7 +16,6 @@ import com.bbte.styoudent.service.impl.JwtTokenProvider;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -101,23 +97,6 @@ public class AuthController {
         cookieUtil.deleteAccessTokenCookie(request, response);
 
         return ResponseEntity.ok().body(new ApiResponseMessage("The logout was successful."));
-    }
-
-    @PostMapping("/sign-up")
-    public ResponseEntity<PersonDto> signUpPerson(@RequestBody @Valid PersonSignUpDto personSignUpDto) {
-        Person person = personAssembler.signUpDtoToModel(personSignUpDto);
-        person.setRole(Role.ROLE_STUDENT);
-
-        try {
-            if (personService.checkIfExistsByEmail(personSignUpDto.getEmail())) {
-                throw new ConflictException("This email address is already in use.");
-            } else {
-                return new ResponseEntity<>(personAssembler.modelToDto(personService.registerNewPerson(person)),
-                        HttpStatus.OK);
-            }
-        } catch (ServiceException se) {
-            throw new BadRequestException("Registration failed!", se);
-        }
     }
 
     private void addAccessTokenCookie(HttpHeaders httpHeaders, Token newAccessToken) {

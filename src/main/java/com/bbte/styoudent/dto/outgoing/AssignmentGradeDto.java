@@ -6,6 +6,6 @@ import lombok.Data;
 public class AssignmentGradeDto {
     private Long id;
     private Double grade;
-    private ThinPersonDto submitter;
+    private PersonDto submitter;
     private ThinAssignmentDto assignment;
 }

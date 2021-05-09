@@ -9,5 +9,5 @@ public class AnnouncementCommentDto {
     private Long id;
     private String content;
     private LocalDateTime date;
-    private ThinPersonDto commenter;
+    private PersonDto commenter;
 }

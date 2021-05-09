@@ -11,6 +11,6 @@ public class DiscussionDto {
     private String name;
     private String content;
     private LocalDateTime date;
-    private ThinPersonDto creator;
+    private PersonDto creator;
     private List<DiscussionCommentDto> comments;
 }

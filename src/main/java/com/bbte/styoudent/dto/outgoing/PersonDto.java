@@ -9,5 +9,6 @@ public class PersonDto {
     private String firstName;
     private String lastName;
     private String email;
+    private String personGroup;
     private Role role;
 }

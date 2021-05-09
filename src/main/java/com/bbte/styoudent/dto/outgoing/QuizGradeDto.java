@@ -5,6 +5,6 @@ import lombok.Data;
 @Data
 public class QuizGradeDto {
     private Double grade;
-    private ThinPersonDto submitter;
+    private PersonDto submitter;
     private ThinQuizDto quiz;
 }

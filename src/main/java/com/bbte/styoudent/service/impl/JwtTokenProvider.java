@@ -49,7 +49,11 @@ public class JwtTokenProvider {
 
     public Claims validateTokenAndExtractAllClaims(String token) {
         try {
-            return Jwts.parserBuilder().setSigningKey(KEY).build().parseClaimsJws(token).getBody();
+            if (token != null && !token.isBlank()) {
+                return Jwts.parserBuilder().setSigningKey(KEY).build().parseClaimsJws(token).getBody();
+            }
+
+            return Jwts.claims();
         } catch (SignatureException | ExpiredJwtException e) {
             throw new ServiceException("Invalid token!", e);
         }

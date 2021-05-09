@@ -10,5 +10,5 @@ public class CourseFileDto {
     private String fileName;
     private Long size;
     private LocalDateTime creationDate;
-    private ThinPersonDto uploader;
+    private PersonDto uploader;
 }

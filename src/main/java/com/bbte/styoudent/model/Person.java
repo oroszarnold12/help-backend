@@ -27,6 +27,7 @@ public class Person extends BaseEntity {
     private String email;
     @Column(name = "password", nullable = false)
     private String password;
+    private String personGroup;
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false)
     private Role role;

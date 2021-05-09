@@ -31,7 +31,7 @@ public class ConversationAssembler {
 
         if (participations != null) {
             thinConversationDto.setParticipants(participations.stream().map(conversationParticipation ->
-                    personAssembler.modelToThinDto(conversationParticipation.getPerson()))
+                    personAssembler.modelToDto(conversationParticipation.getPerson()))
                     .collect(Collectors.toList()));
         }
 
@@ -53,7 +53,7 @@ public class ConversationAssembler {
 
         if (participations != null) {
             conversationDto.setParticipants(participations.stream().map(conversationParticipation ->
-                    personAssembler.modelToThinDto(conversationParticipation.getPerson()))
+                    personAssembler.modelToDto(conversationParticipation.getPerson()))
                     .collect(Collectors.toList()));
         }
 

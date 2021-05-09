@@ -4,9 +4,10 @@ import com.bbte.styoudent.api.assembler.PersonAssembler;
 import com.bbte.styoudent.api.exception.BadRequestException;
 import com.bbte.styoudent.api.exception.InternalServerException;
 import com.bbte.styoudent.api.util.PersonUtil;
-import com.bbte.styoudent.dto.outgoing.PersonDto;
+import com.bbte.styoudent.dto.incoming.PersonSignUpDto;
 import com.bbte.styoudent.dto.incoming.PersonUpdateDto;
 import com.bbte.styoudent.dto.outgoing.ApiResponseMessage;
+import com.bbte.styoudent.dto.outgoing.PersonDto;
 import com.bbte.styoudent.model.Person;
 import com.bbte.styoudent.model.Role;
 import com.bbte.styoudent.security.util.AuthUtil;
@@ -18,6 +19,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Size;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -51,7 +53,7 @@ public class PersonController {
                 return ResponseEntity.ok(
                         Collections.singletonMap("persons", personService.getAllPersons()
                                 .stream().filter(person1 -> !person1.getRole().equals(Role.ROLE_ADMIN))
-                                .map(personAssembler::modelToThinDto)
+                                .map(personAssembler::modelToDto)
                                 .collect(Collectors.toList())));
             } else {
                 return ResponseEntity.ok(
@@ -62,6 +64,18 @@ public class PersonController {
         } catch (ServiceException se) {
             throw new InternalServerException("Could not GET persons!", se);
         }
+    }
+
+    @PostMapping()
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<PersonDto>> signUpPerson(
+            @RequestBody @Valid @Size(min = 1) List<PersonSignUpDto> personSignUpDtos
+    ) {
+        List<Person> persons = personUtil.getPersons(personSignUpDtos);
+
+        return ResponseEntity.ok(
+                personUtil.registerPersons(persons)
+        );
     }
 
     @PutMapping("/{id}")
@@ -75,6 +89,7 @@ public class PersonController {
             Person incomingPerson = personAssembler.updateDtoToModel(personUpdateDto);
 
             person.setRole(incomingPerson.getRole());
+            person.setPersonGroup(personUpdateDto.getPersonGroup());
             personService.savePerson(person);
 
             personUtil.createSingleNotificationOfRoleChange(person);

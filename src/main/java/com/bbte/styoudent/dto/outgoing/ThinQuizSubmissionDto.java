@@ -6,6 +6,6 @@ import java.util.Collection;
 
 @Data
 public class ThinQuizSubmissionDto {
-    private ThinPersonDto submitter;
+    private PersonDto submitter;
     private Collection<ThinAnswerSubmissionDto> answerSubmissions;
 }

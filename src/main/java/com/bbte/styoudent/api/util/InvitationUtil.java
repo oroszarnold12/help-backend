@@ -14,10 +14,10 @@ import com.bbte.styoudent.service.ServiceException;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 @Component
 public class InvitationUtil {
@@ -61,7 +61,7 @@ public class InvitationUtil {
         }
     }
 
-    public List<Person> getPersons(String... emails) {
+    private List<Person> getPersonsByEmails(List<String> emails) {
         List<Person> persons = new ArrayList<>();
         List<String> failedFor = new ArrayList<>();
 
@@ -74,7 +74,41 @@ public class InvitationUtil {
         }
 
         if (!failedFor.isEmpty()) {
-            throw new BadRequestException("Could not GET persons with emails: " + Arrays.toString(emails) + "!");
+            throw new BadRequestException("Could not find person(s) with e-mail(s): "
+                    + String.join(", ", failedFor) + "!");
+        }
+
+        return persons;
+    }
+
+    private List<Person> getPersonsByGroups(List<String> personGroups) {
+        try {
+            return personService.getAllPersons()
+                    .stream().filter(person -> personGroups.contains(person.getPersonGroup()))
+                    .collect(Collectors.toList());
+        } catch (ServiceException serviceException) {
+            throw new InternalServerException("Could not get persons!", serviceException);
+        }
+    }
+
+    public List<Person> getPersons(boolean inviteByEmails, boolean inviteByPersonGroups,
+                                   List<String> emails, List<String> personGroups) {
+        List<Person> persons = new ArrayList<>();
+
+        if (inviteByEmails) {
+            if (emails == null || emails.isEmpty()) {
+                throw new BadRequestException("List of emails should not be empty!");
+            }
+
+            persons = getPersonsByEmails(emails);
+        }
+
+        if (inviteByPersonGroups) {
+            if (personGroups == null || personGroups.isEmpty()) {
+                throw new BadRequestException("List of groups should not be empty!");
+            }
+
+            persons = getPersonsByGroups(personGroups);
         }
 
         return persons;

@@ -9,6 +9,6 @@ public class AssignmentCommentDto {
     private Long id;
     private String content;
     private LocalDateTime date;
-    private ThinPersonDto commenter;
-    private ThinPersonDto recipient;
+    private PersonDto commenter;
+    private PersonDto recipient;
 }

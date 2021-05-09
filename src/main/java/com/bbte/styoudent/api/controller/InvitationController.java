@@ -69,7 +69,8 @@ public class InvitationController {
     @PostMapping
     @PreAuthorize("hasRole('TEACHER')")
     public ResponseEntity<ApiResponseMessage> createInvitations(
-            @RequestBody @Valid InvitationCreationDto invitationCreationDto) {
+            @RequestBody @Valid InvitationCreationDto invitationCreationDto,
+            @RequestParam boolean inviteByEmails, @RequestParam boolean inviteByPersonGroups) {
         log.debug("POST /invitations {}", invitationCreationDto);
 
         Person user = personService.getPersonByEmail(AuthUtil.getCurrentUsername());
@@ -77,7 +78,12 @@ public class InvitationController {
 
         participationUtil.checkIfParticipates(course.getId(), user);
 
-        List<Person> persons = invitationUtil.getPersons(invitationCreationDto.getEmails());
+        if (inviteByEmails && inviteByPersonGroups) {
+            throw new BadRequestException("Can't invite by two methods at the same time!");
+        }
+
+        List<Person> persons = invitationUtil.getPersons(inviteByEmails, inviteByPersonGroups,
+                invitationCreationDto.getEmails(), invitationCreationDto.getPersonGroups());
 
         persons = persons.stream().filter(person -> !participationService.checkIfParticipates(course.getId(), person)
                 && !invitationService.checkIfExistsByPersonIdAndCourseId(person.getId(), course.getId()))

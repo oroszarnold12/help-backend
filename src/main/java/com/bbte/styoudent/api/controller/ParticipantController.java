@@ -5,7 +5,7 @@ import com.bbte.styoudent.api.exception.BadRequestException;
 import com.bbte.styoudent.api.exception.InternalServerException;
 import com.bbte.styoudent.api.util.ParticipantUtil;
 import com.bbte.styoudent.api.util.ParticipationUtil;
-import com.bbte.styoudent.dto.outgoing.ThinPersonDto;
+import com.bbte.styoudent.dto.outgoing.PersonDto;
 import com.bbte.styoudent.model.Course;
 import com.bbte.styoudent.model.Person;
 import com.bbte.styoudent.security.util.AuthUtil;
@@ -47,7 +47,7 @@ public class ParticipantController {
 
     @GetMapping
     @PreAuthorize("hasRole('TEACHER') or hasRole('STUDENT')")
-    ResponseEntity<List<ThinPersonDto>> getParticipants(@PathVariable("courseId") Long courseId) {
+    ResponseEntity<List<PersonDto>> getParticipants(@PathVariable("courseId") Long courseId) {
         log.debug("GET /courses/{}/participants", courseId);
 
         Person person = personService.getPersonByEmail(AuthUtil.getCurrentUsername());
@@ -58,7 +58,7 @@ public class ParticipantController {
 
             return ResponseEntity.ok(
                     personService.getByCoursesContains(course)
-                            .stream().map(personAssembler::modelToThinDto)
+                            .stream().map(personAssembler::modelToDto)
                             .collect(Collectors.toList()));
 
         } catch (ServiceException se) {

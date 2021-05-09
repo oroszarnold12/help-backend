@@ -9,5 +9,5 @@ public class ThinDiscussionDto {
     private Long id;
     private String name;
     private LocalDateTime date;
-    private ThinPersonDto creator;
+    private PersonDto creator;
 }
