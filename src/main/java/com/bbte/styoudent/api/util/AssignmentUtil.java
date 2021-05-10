@@ -2,9 +2,14 @@ package com.bbte.styoudent.api.util;
 
 import com.bbte.styoudent.api.exception.InternalServerException;
 import com.bbte.styoudent.api.exception.NotFoundException;
-import com.bbte.styoudent.model.*;
-import com.bbte.styoudent.service.AssignmentGradeService;
-import com.bbte.styoudent.service.AssignmentService;
+import com.bbte.styoudent.model.assignment.*;
+import com.bbte.styoudent.model.course.Course;
+import com.bbte.styoudent.model.notification.Note;
+import com.bbte.styoudent.model.person.Participation;
+import com.bbte.styoudent.model.person.Person;
+import com.bbte.styoudent.model.person.Role;
+import com.bbte.styoudent.service.assignment.AssignmentGradeService;
+import com.bbte.styoudent.service.assignment.AssignmentService;
 import com.bbte.styoudent.service.ServiceException;
 import org.springframework.stereotype.Component;
 

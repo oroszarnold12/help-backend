@@ -1,11 +1,11 @@
 package com.bbte.styoudent.api.assembler;
 
-import com.bbte.styoudent.dto.incoming.CourseCreationDto;
-import com.bbte.styoudent.dto.outgoing.CourseDto;
-import com.bbte.styoudent.dto.outgoing.CourseFileDto;
-import com.bbte.styoudent.dto.outgoing.ThinCourseDto;
-import com.bbte.styoudent.model.Course;
-import com.bbte.styoudent.model.CourseFile;
+import com.bbte.styoudent.dto.incoming.course.CourseCreationDto;
+import com.bbte.styoudent.dto.outgoing.course.CourseDto;
+import com.bbte.styoudent.dto.outgoing.course.CourseFileDto;
+import com.bbte.styoudent.dto.outgoing.course.ThinCourseDto;
+import com.bbte.styoudent.model.course.Course;
+import com.bbte.styoudent.model.course.CourseFile;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 

@@ -1,9 +1,9 @@
 package com.bbte.styoudent.api.assembler;
 
-import com.bbte.styoudent.dto.outgoing.AssignmentGradeDto;
-import com.bbte.styoudent.dto.outgoing.QuizGradeDto;
-import com.bbte.styoudent.model.AssignmentGrade;
-import com.bbte.styoudent.model.QuizGrade;
+import com.bbte.styoudent.dto.outgoing.assignment.AssignmentGradeDto;
+import com.bbte.styoudent.dto.outgoing.quiz.QuizGradeDto;
+import com.bbte.styoudent.model.assignment.AssignmentGrade;
+import com.bbte.styoudent.model.quiz.QuizGrade;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 

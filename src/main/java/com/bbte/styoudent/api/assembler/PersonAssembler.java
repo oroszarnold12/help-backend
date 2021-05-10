@@ -1,9 +1,9 @@
 package com.bbte.styoudent.api.assembler;
 
-import com.bbte.styoudent.dto.incoming.PersonSignUpDto;
-import com.bbte.styoudent.dto.incoming.PersonUpdateDto;
-import com.bbte.styoudent.dto.outgoing.PersonDto;
-import com.bbte.styoudent.model.Person;
+import com.bbte.styoudent.dto.incoming.person.PersonSignUpDto;
+import com.bbte.styoudent.dto.incoming.person.PersonUpdateDto;
+import com.bbte.styoudent.dto.outgoing.person.PersonDto;
+import com.bbte.styoudent.model.person.Person;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 

@@ -1,7 +1,7 @@
 package com.bbte.styoudent.model.conversation;
 
 import com.bbte.styoudent.model.BaseEntity;
-import com.bbte.styoudent.model.Person;
+import com.bbte.styoudent.model.person.Person;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;

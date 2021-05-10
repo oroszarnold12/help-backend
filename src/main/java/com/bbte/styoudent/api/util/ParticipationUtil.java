@@ -2,8 +2,8 @@ package com.bbte.styoudent.api.util;
 
 import com.bbte.styoudent.api.exception.ForbiddenException;
 import com.bbte.styoudent.api.exception.InternalServerException;
-import com.bbte.styoudent.model.Person;
-import com.bbte.styoudent.service.ParticipationService;
+import com.bbte.styoudent.model.person.Person;
+import com.bbte.styoudent.service.person.ParticipationService;
 import com.bbte.styoudent.service.ServiceException;
 import org.springframework.stereotype.Component;
 

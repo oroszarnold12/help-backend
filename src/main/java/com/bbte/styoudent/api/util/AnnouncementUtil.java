@@ -2,8 +2,14 @@ package com.bbte.styoudent.api.util;
 
 import com.bbte.styoudent.api.exception.BadRequestException;
 import com.bbte.styoudent.api.exception.InternalServerException;
-import com.bbte.styoudent.model.*;
-import com.bbte.styoudent.service.AnnouncementService;
+import com.bbte.styoudent.model.announcement.Announcement;
+import com.bbte.styoudent.model.announcement.AnnouncementComment;
+import com.bbte.styoudent.model.course.Course;
+import com.bbte.styoudent.model.notification.Note;
+import com.bbte.styoudent.model.person.Participation;
+import com.bbte.styoudent.model.person.Person;
+import com.bbte.styoudent.model.person.Role;
+import com.bbte.styoudent.service.announcement.AnnouncementService;
 import com.bbte.styoudent.service.ServiceException;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;

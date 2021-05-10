@@ -1,7 +1,7 @@
 package com.bbte.styoudent.api.assembler;
 
-import com.bbte.styoudent.dto.outgoing.ParticipationDto;
-import com.bbte.styoudent.model.Participation;
+import com.bbte.styoudent.dto.outgoing.person.ParticipationDto;
+import com.bbte.styoudent.model.person.Participation;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 

@@ -1,12 +1,12 @@
 package com.bbte.styoudent.service.impl;
 
-import com.bbte.styoudent.model.Person;
-import com.bbte.styoudent.repository.PersonRepository;
+import com.bbte.styoudent.model.person.Person;
+import com.bbte.styoudent.repository.person.PersonRepository;
+import com.bbte.styoudent.service.ServiceException;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -21,7 +21,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     public UserDetails loadUserByUsername(String email) {
         Person currentUser;
         currentUser = personRepository.findPersonByEmail(email).orElseThrow(
-                () -> new UsernameNotFoundException("User not found!")
+                () -> new ServiceException("User not found!")
         );
 
         return new User(email, currentUser.getPassword(),

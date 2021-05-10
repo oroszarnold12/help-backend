@@ -1,8 +1,12 @@
 package com.bbte.styoudent.api.assembler;
 
-import com.bbte.styoudent.dto.outgoing.AssignmentDto;
-import com.bbte.styoudent.dto.incoming.AssignmentCreationDto;
-import com.bbte.styoudent.model.Assignment;
+import com.bbte.styoudent.dto.outgoing.assignment.AssignmentCommentDto;
+import com.bbte.styoudent.dto.outgoing.assignment.AssignmentDto;
+import com.bbte.styoudent.dto.incoming.assignment.AssignmentCreationDto;
+import com.bbte.styoudent.dto.outgoing.assignment.AssignmentSubmissionDto;
+import com.bbte.styoudent.model.assignment.Assignment;
+import com.bbte.styoudent.model.assignment.AssignmentComment;
+import com.bbte.styoudent.model.assignment.AssignmentSubmission;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 
@@ -20,5 +24,13 @@ public class AssignmentAssembler {
 
     public AssignmentDto modelToDto(Assignment assignment) {
         return modelMapper.map(assignment, AssignmentDto.class);
+    }
+
+    public AssignmentCommentDto modelToDto(AssignmentComment assignmentComment) {
+        return this.modelMapper.map(assignmentComment, AssignmentCommentDto.class);
+    }
+
+    public AssignmentSubmissionDto modelToDto(AssignmentSubmission assignmentSubmission) {
+        return this.modelMapper.map(assignmentSubmission, AssignmentSubmissionDto.class);
     }
 }

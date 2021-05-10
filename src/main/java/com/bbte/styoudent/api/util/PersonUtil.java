@@ -3,11 +3,11 @@ package com.bbte.styoudent.api.util;
 import com.bbte.styoudent.api.assembler.PersonAssembler;
 import com.bbte.styoudent.api.exception.ConflictException;
 import com.bbte.styoudent.api.exception.InternalServerException;
-import com.bbte.styoudent.dto.incoming.PersonSignUpDto;
-import com.bbte.styoudent.dto.outgoing.PersonDto;
-import com.bbte.styoudent.model.Note;
-import com.bbte.styoudent.model.Person;
-import com.bbte.styoudent.service.PersonService;
+import com.bbte.styoudent.dto.incoming.person.PersonSignUpDto;
+import com.bbte.styoudent.dto.outgoing.person.PersonDto;
+import com.bbte.styoudent.model.notification.Note;
+import com.bbte.styoudent.model.person.Person;
+import com.bbte.styoudent.service.person.PersonService;
 import com.bbte.styoudent.service.ServiceException;
 import org.springframework.stereotype.Component;
 

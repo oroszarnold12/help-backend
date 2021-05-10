@@ -1,11 +1,11 @@
 package com.bbte.styoudent.api.util;
 
 import com.bbte.styoudent.api.exception.InternalServerException;
-import com.bbte.styoudent.model.Course;
-import com.bbte.styoudent.model.Note;
-import com.bbte.styoudent.model.Person;
-import com.bbte.styoudent.service.CourseService;
-import com.bbte.styoudent.service.PersonService;
+import com.bbte.styoudent.model.course.Course;
+import com.bbte.styoudent.model.notification.Note;
+import com.bbte.styoudent.model.person.Person;
+import com.bbte.styoudent.service.course.CourseService;
+import com.bbte.styoudent.service.person.PersonService;
 import com.bbte.styoudent.service.ServiceException;
 import org.springframework.stereotype.Component;
 

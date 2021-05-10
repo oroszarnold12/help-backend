@@ -4,11 +4,16 @@ import com.bbte.styoudent.api.exception.BadRequestException;
 import com.bbte.styoudent.api.exception.ForbiddenException;
 import com.bbte.styoudent.api.exception.InternalServerException;
 import com.bbte.styoudent.api.exception.NotFoundException;
-import com.bbte.styoudent.model.*;
 import com.bbte.styoudent.model.conversation.Conversation;
 import com.bbte.styoudent.model.conversation.ConversationMessage;
 import com.bbte.styoudent.model.conversation.ConversationParticipation;
+import com.bbte.styoudent.model.notification.Note;
+import com.bbte.styoudent.model.person.Person;
 import com.bbte.styoudent.service.*;
+import com.bbte.styoudent.service.conversation.ConversationMessageService;
+import com.bbte.styoudent.service.conversation.ConversationParticipationService;
+import com.bbte.styoudent.service.conversation.ConversationService;
+import com.bbte.styoudent.service.person.PersonService;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Component;
 

@@ -1,6 +1,6 @@
 package com.bbte.styoudent.dto.outgoing.conversation;
 
-import com.bbte.styoudent.dto.outgoing.PersonDto;
+import com.bbte.styoudent.dto.outgoing.person.PersonDto;
 import lombok.Data;
 
 import java.util.List;
