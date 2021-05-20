@@ -3,6 +3,7 @@ package com.bbte.styoudent.api.controller.person;
 import com.bbte.styoudent.api.assembler.PersonAssembler;
 import com.bbte.styoudent.api.exception.InternalServerException;
 import com.bbte.styoudent.dto.incoming.person.PersonPasswordDto;
+import com.bbte.styoudent.dto.incoming.person.PersonSendNotificationsDto;
 import com.bbte.styoudent.dto.outgoing.person.PersonDto;
 import com.bbte.styoudent.model.person.Person;
 import com.bbte.styoudent.model.person.FileObject;
@@ -57,6 +58,25 @@ public class UserController {
             );
         } catch (ServiceException se) {
             throw new InternalServerException("Could not change password!", se);
+        }
+    }
+
+    @PatchMapping
+    @PreAuthorize("hasRole('TEACHER') or hasRole('ADMIN') or hasRole('STUDENT')")
+    public PersonDto changeSendNotifications(
+            @RequestBody @Valid PersonSendNotificationsDto personSendNotificationsDto
+    ) {
+        log.debug("PATCH /user");
+
+        Person person = personService.getPersonByEmail(AuthUtil.getCurrentUsername());
+        person.setSendNotifications(personSendNotificationsDto.getSendNotifications());
+
+        try {
+            return personAssembler.modelToDto(
+                    personService.savePerson(person)
+            );
+        } catch (ServiceException se) {
+            throw new InternalServerException("Could not change notification settings!", se);
         }
     }
 

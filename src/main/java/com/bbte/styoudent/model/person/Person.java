@@ -44,6 +44,7 @@ public class Person extends BaseEntity {
     @Column(name = "role", nullable = false)
     private Role role;
     private String notificationToken;
+    private Boolean sendNotifications;
     @OneToOne(cascade = CascadeType.ALL, fetch = LAZY)
     private FileObject image;
     @OneToMany(mappedBy = "teacher", cascade = CascadeType.ALL, orphanRemoval = true)

@@ -30,6 +30,9 @@ public class CookieUtilProdImpl implements CookieUtil {
             for (Cookie cookie : request.getCookies()) {
                 if (cookie.getName().equals(JwtTokenProvider.ACCESS_TOKEN_COOKIE_NAME)) {
                     cookie.setMaxAge(0);
+                    cookie.setHttpOnly(true);
+                    cookie.setPath("/");
+                    cookie.setSecure(true);
                     response.addCookie(cookie);
                     break;
                 }

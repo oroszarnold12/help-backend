@@ -19,7 +19,7 @@ public class FirebaseUtil {
     }
 
     public void sendNotification(Note note, Person recipient, String entity) {
-        if (recipient.getNotificationToken() != null) {
+        if (recipient.getNotificationToken() != null && recipient.getSendNotifications()) {
             try {
                 firebaseMessagingService.sendNotification(note, recipient.getNotificationToken());
             } catch (ServiceException serviceException) {

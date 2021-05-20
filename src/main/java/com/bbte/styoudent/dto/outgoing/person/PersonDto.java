@@ -10,5 +10,6 @@ public class PersonDto {
     private String lastName;
     private String email;
     private String personGroup;
+    private Boolean sendNotifications;
     private Role role;
 }

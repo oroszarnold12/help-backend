@@ -43,6 +43,7 @@ public class PersonUtil {
 
         personSignUpDtos.forEach(personSignUpDto -> {
             Person person = personAssembler.signUpDtoToModel(personSignUpDto);
+            person.setSendNotifications(true);
 
             try {
                 if (personService.checkIfExistsByEmail(person.getEmail())) {
