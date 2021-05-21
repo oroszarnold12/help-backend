@@ -1,0 +1,25 @@
+image: gradle:6.9-jdk11
+
+services:
+  - postgres:12.2-alpine
+
+variables:
+  GRADLE_OPTS: "-Dorg.gradle.daemon=false"
+  POSTGRES_DB: styoudent
+  POSTGRES_USER: postgres
+  POSTGRES_PASSWORD: UwMnRZ8ds8aioT
+  POSTGRES_HOST_AUTH_METHOD: trust
+  SPRING_DATASOURCE_URL: jdbc:postgresql://postgres/styoudent
+
+before_script:
+  - export GRADLE_USER_HOME=`pwd`/.gradle
+
+test:
+  stage: test
+  script: gradle check
+  cache:
+    key: "$CI_COMMIT_REF_NAME"
+    policy: pull
+    paths:
+      - build
+      - .gradle
