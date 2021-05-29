@@ -5,25 +5,21 @@ import com.bbte.styoudent.api.exception.ConflictException;
 import com.bbte.styoudent.api.exception.InternalServerException;
 import com.bbte.styoudent.dto.incoming.person.PersonSignUpDto;
 import com.bbte.styoudent.dto.outgoing.person.PersonDto;
-import com.bbte.styoudent.model.notification.Note;
 import com.bbte.styoudent.model.person.Person;
-import com.bbte.styoudent.service.person.PersonService;
 import com.bbte.styoudent.service.ServiceException;
+import com.bbte.styoudent.service.person.PersonService;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
 public class PersonUtil {
-    private final FirebaseUtil firebaseUtil;
     private final PersonAssembler personAssembler;
     private final PersonService personService;
 
-    public PersonUtil(FirebaseUtil firebaseUtil, PersonAssembler personAssembler, PersonService personService) {
-        this.firebaseUtil = firebaseUtil;
+    public PersonUtil(PersonAssembler personAssembler, PersonService personService) {
         this.personAssembler = personAssembler;
         this.personService = personService;
     }
