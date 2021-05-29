@@ -28,15 +28,6 @@ public class PersonUtil {
         this.personService = personService;
     }
 
-    public void createSingleNotificationOfRoleChange(Person person) {
-        String title = "Role changed!";
-        String body = "Your current role is " + person.getRole() + "!";
-
-        Note note = new Note(title, body, new HashMap<>());
-
-        firebaseUtil.sendNotification(note, person, "role");
-    }
-
     public List<Person> getPersons(List<PersonSignUpDto> personSignUpDtos) {
         List<String> emailsAlreadyInUse = new ArrayList<>();
         List<Person> persons = new ArrayList<>();

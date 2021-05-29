@@ -14,7 +14,7 @@ public class WebConfig implements WebMvcConfigurer {
                         "http://localhost",
                         "http://localhost:8080",
                         "http://localhost:8100",
-                        "http://192.168.1.102:8101")
+                        "http://192.168.1.102:8100")
                 .allowedMethods("PUT", "DELETE", "GET", "POST")
                 .allowCredentials(true);
     }

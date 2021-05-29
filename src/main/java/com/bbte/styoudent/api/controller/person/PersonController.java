@@ -89,10 +89,10 @@ public class PersonController {
             Person incomingPerson = personAssembler.updateDtoToModel(personUpdateDto);
 
             person.setRole(incomingPerson.getRole());
-            person.setPersonGroup(personUpdateDto.getPersonGroup());
+            person.setPersonGroup(incomingPerson.getPersonGroup());
+            person.setFirstName(incomingPerson.getFirstName());
+            person.setLastName(incomingPerson.getLastName());
             personService.savePerson(person);
-
-            personUtil.createSingleNotificationOfRoleChange(person);
 
             return ResponseEntity.ok(personAssembler.modelToDto(person));
         } catch (ServiceException se) {
